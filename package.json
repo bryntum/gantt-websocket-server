@@ -1,0 +1,19 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Web server demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js port=8080",
+    "test": "jest tests"
+  },
+  "author": "Bryntum",
+  "license": "ISC",
+  "dependencies": {
+    "network-interfaces": "~1.1.0",
+    "ws": "~6.1.4"
+  },
+  "devDependencies": {
+    "jest": "~27.5.1"
+  }
+}
