@@ -18,7 +18,6 @@ const
         acc[k]            = v;
         return acc;
     }, {}),
-    customFields = [],
     resetDelay   = (args.resetDelay || 30 * 60) * 1000,
     debug        = args.debug,
     dataHandler  = new DataHandler();
@@ -27,9 +26,7 @@ let
     port         = args.port || 8080,
     httpsServer  = null, // Https server
     wss          = null, // WebSockets server
-    storage      = new Storage(),
-    lastActionTime,
-    dataset;
+    lastActionTime;
 
 /**
  * Logs message to console
@@ -160,18 +157,14 @@ function startWebSocketServer() {
                             ws.userName = 'Client';
                         }
                         broadcastUsers();
-                        break;
+                        // Send hello message to other clients to greet newcomer
+                        broadcast(ws, data);
+                        return;
 
                     // Client requests data reset
                     case 'reset':
                         resetDataSet(ws.userName);
                         // Do not broadcast
-                        return;
-
-                    // Client checks if custom fields are defined
-                    case 'fields':
-                        data.customFields = customFields;
-                        ws.send(JSON.stringify(data));
                         return;
 
                     // Client requested its initial dataset, send the up to date version
@@ -187,16 +180,14 @@ function startWebSocketServer() {
                     case 'projectChange': {
                         const { changes, hasNewRecords } = dataHandler.handleProjectChanges(data.changes);
                         if (hasNewRecords) {
-                            broadcast(null, { command : 'projectChange', projectChanges : changes });
+                            broadcast(null, { command : 'projectChange', changes });
                         }
                         else {
-                            broadcast(ws, { command : 'projectChange', projectChanges : changes });
+                            broadcast(ws, { command : 'projectChange', changes });
                         }
                         return;
                     }
                 }
-
-                broadcast(ws, data);
             }
             catch (error) {
                 // log error to console and reset data
