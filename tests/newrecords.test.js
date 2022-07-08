@@ -1,10 +1,15 @@
 const WebSocket = require('ws');
 const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
+const { WebSocketServer } = require('../server.js');
 
-const serverAddress = 'ws://localhost:8082';
+const server = new WebSocketServer({ port : 8082 });
+
+beforeAll(() => server.init());
+
+afterAll(() => server.destroy());
 
 test('Should respond to client if task was added', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -25,8 +30,8 @@ test('Should respond to client if task was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
             },
@@ -52,7 +57,7 @@ test('Should respond to client if task was added', async () => {
 });
 
 test('Should respond to client if resource was added', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -73,8 +78,8 @@ test('Should respond to client if resource was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
             },
@@ -100,7 +105,7 @@ test('Should respond to client if resource was added', async () => {
 });
 
 test('Should respond to client if dependency was added', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -121,8 +126,8 @@ test('Should respond to client if dependency was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
             },
@@ -148,7 +153,7 @@ test('Should respond to client if dependency was added', async () => {
 });
 
 test('Should respond to client if assignment was added', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -169,8 +174,8 @@ test('Should respond to client if assignment was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
             },
@@ -196,8 +201,8 @@ test('Should respond to client if assignment was added', async () => {
 });
 
 test('Should not send response to the sender if no records were added', async () => {
-    const ws = new WebSocket(serverAddress);
-    const ws1 = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -218,8 +223,8 @@ test('Should not send response to the sender if no records were added', async ()
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
             },

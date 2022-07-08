@@ -27,6 +27,19 @@ class WebSocketServer {
         Object.assign(this, config);
     }
 
+    destroy() {
+        this.wss.close();
+        this.httpsServer?.close();
+    }
+
+    get address() {
+        const
+            options = { internal : false, ipVersion : 4 },
+            ip      = ni.toIp(ni.getInterfaces(options)[0], options);
+
+        return `ws${this.httpsServer ? 's' : ''}://${ip}:${this.port}`;
+    }
+
     /**
      * Initializes WebSocket server starting from the specified port.
      * If port is not available then server tries to increment port number and starts again while port is lower then 65535
@@ -38,60 +51,66 @@ class WebSocketServer {
 
         let httpsServer, wss;
 
-        if (port < 65535) {
-            const options = {};
+        return new Promise((resolve, reject) => {
+            if (port < 65535) {
+                const options = {};
 
-            // load SSL certificate
-            if (fs.existsSync('cert/key.pem') && fs.existsSync('cert/cert.pem')) {
-                options.key  = fs.readFileSync('cert/key.pem', 'utf8');
-                options.cert = fs.readFileSync('cert/cert.pem', 'utf8');
+                // load SSL certificate
+                if (fs.existsSync('cert/key.pem') && fs.existsSync('cert/cert.pem')) {
+                    options.key  = fs.readFileSync('cert/key.pem', 'utf8');
+                    options.cert = fs.readFileSync('cert/cert.pem', 'utf8');
 
-                httpsServer = https.createServer(options, (req, res) => {
-                    // Simple server response
-                    res.writeHead(200);
-                    res.end('Https server is online\n');
-                }).listen(port);
+                    httpsServer = https.createServer(options, (req, res) => {
+                        // Simple server response
+                        res.writeHead(200);
+                        res.end('Https server is online\n');
+                    }).listen(port);
 
-                wss = new WebSocket.Server({ server : httpsServer });
-            }
-            else {
-                wss = new WebSocket.Server({ port : port });
-            }
-
-            wss.on('error', error => {
-                if (/EADDRINUSE/.test(error)) {
-                    me.port++;
-                    me.init();
+                    wss = new WebSocket.Server({ server : httpsServer });
                 }
                 else {
-                    httpsServer = null;
-                    wss = null;
-                    me.logError(error);
+                    wss = new WebSocket.Server({ port : port });
                 }
-            });
 
-            wss.on('listening', () => me.startWebSocketServer());
-        }
-        else {
-            httpsServer = null;
-            wss = null;
-            me.logError('No available ports');
-        }
+                wss.on('error', error => {
+                    if (/EADDRINUSE/.test(error)) {
+                        me.port++;
+                        me.init();
+                    }
+                    else {
+                        httpsServer = null;
+                        wss = null;
+                        me.logError(error);
+                    }
+                });
 
-        me.httpsServer = httpsServer;
-        me.wss = wss;
+                wss.on('listening', () => {
+                    me.startWebSocketServer();
+                    resolve(true);
+                });
+            }
+            else {
+                httpsServer = null;
+                wss = null;
+                me.logError('No available ports');
+                reject('No available ports');
+            }
 
-        /**
-         * Automatically resets dataset if no actions performed during resetDelay time
-         */
-        if (resetDelay > 0) {
-            setInterval(() => {
-                if (me.lastActionTime + resetDelay < new Date().getTime()) {
-                    me.resetDataSet();
-                    me.lastActionTime = new Date().getTime();
-                }
-            }, 1000);
-        }
+            me.httpsServer = httpsServer;
+            me.wss = wss;
+
+            /**
+             * Automatically resets dataset if no actions performed during resetDelay time
+             */
+            if (resetDelay > 0) {
+                setInterval(() => {
+                    if (me.lastActionTime + resetDelay < new Date().getTime()) {
+                        me.resetDataSet();
+                        me.lastActionTime = new Date().getTime();
+                    }
+                }, 1000);
+            }
+        });
     }
 
     /**
@@ -99,8 +118,6 @@ class WebSocketServer {
      */
     startWebSocketServer() {
         const me = this;
-
-        me.showWebSocketServerAddress();
 
         me.debugLog('Setup listeners ...');
 
@@ -225,10 +242,7 @@ class WebSocketServer {
      * Show the server ip on console to make it easier for clients to connect
      */
     showWebSocketServerAddress() {
-        const
-            options = { internal : false, ipVersion : 4 },
-            ip      = ni.toIp(ni.getInterfaces(options)[0], options);
-        this.log(`Server started at ws${this.httpsServer ? 's' : ''}://${ip}:${this.port}`);
+        this.log(this.address);
     }
 
     /**

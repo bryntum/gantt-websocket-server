@@ -11,4 +11,6 @@ const
 
 const server = new WebSocketServer({ debug, resetDelay });
 
-server.init(port);
+server.init(port).then(() => {
+    server.showWebSocketServerAddress();
+});

@@ -1,10 +1,15 @@
 const WebSocket = require('ws');
+const { WebSocketServer } = require('../server.js');
 const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
 
-const serverAddress = 'ws://localhost:8081';
+const server = new WebSocketServer({ port : 8081 });
+
+beforeAll(() => server.init());
+
+afterAll(() => server.destroy());
 
 test('Should greet new user', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command  : 'hello',
@@ -24,7 +29,7 @@ test('Should greet new user', async () => {
 });
 
 test('Should generate ids for new records', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -45,8 +50,8 @@ test('Should generate ids for new records', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command  : 'projectChange',
+        changes  : {
             tasks : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
             },
@@ -70,9 +75,9 @@ test('Should generate ids for new records', async () => {
 });
 
 test('Should broadcast ids for new records among clients', async () => {
-    const ws = new WebSocket(serverAddress);
-    const ws1 = new WebSocket(serverAddress);
-    const ws2 = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
+    const ws2 = new WebSocket(server.address);
 
     const request = {
         command : 'projectChange',
@@ -93,8 +98,8 @@ test('Should broadcast ids for new records among clients', async () => {
     };
 
     const expected = expect.objectContaining({
-        command        : 'projectChange',
-        projectChanges : {
+        command : 'projectChange',
+        changes : {
             tasks : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
             },
@@ -132,7 +137,7 @@ test('Should broadcast ids for new records among clients', async () => {
 });
 
 test('Should get dataset from server', async () => {
-    const ws = new WebSocket(serverAddress);
+    const ws = new WebSocket(server.address);
 
     await waitForConnectionOpen(ws);
 
