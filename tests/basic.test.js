@@ -1,31 +1,31 @@
 const WebSocket = require('ws');
 const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
 
-const serverAddress = 'ws://localhost:8080';
+const serverAddress = 'ws://localhost:8081';
 
 test('Should greet new user', async () => {
     const ws = new WebSocket(serverAddress);
-    
+
     const request = {
         command  : 'hello',
         userName : 'Foo'
     };
-    
+
     const expected = expect.objectContaining({
         command : 'users',
         users   : expect.arrayContaining(['Foo'])
     });
-    
+
     const got = await awaitNextMessage(ws, request);
-    
+
     expect(got).toEqual(expected);
-    
+
     ws.terminate();
 });
 
 test('Should generate ids for new records', async () => {
     const ws = new WebSocket(serverAddress);
-    
+
     const request = {
         command : 'projectChange',
         changes : {
@@ -43,7 +43,7 @@ test('Should generate ids for new records', async () => {
             }
         }
     };
-    
+
     const expected = expect.objectContaining({
         command        : 'projectChange',
         projectChanges : {
@@ -61,11 +61,11 @@ test('Should generate ids for new records', async () => {
             }
         }
     });
-    
+
     const got = await awaitNextMessage(ws, request);
-    
+
     expect(got).toEqual(expected);
-    
+
     ws.terminate();
 });
 
@@ -73,7 +73,7 @@ test('Should broadcast ids for new records among clients', async () => {
     const ws = new WebSocket(serverAddress);
     const ws1 = new WebSocket(serverAddress);
     const ws2 = new WebSocket(serverAddress);
-    
+
     const request = {
         command : 'projectChange',
         changes : {
@@ -109,23 +109,23 @@ test('Should broadcast ids for new records among clients', async () => {
             }
         }
     });
-    
+
     await Promise.allSettled([
         waitForConnectionOpen(ws),
         waitForConnectionOpen(ws1),
         waitForConnectionOpen(ws2)
     ]);
-    
+
     const [response1, response2, response3] = await Promise.allSettled([
         awaitNextMessage(ws, request),
         awaitNextMessage(ws1),
         awaitNextMessage(ws2)
     ]);
-    
+
     expect(response1.value).toEqual(expected);
     expect(response2.value).toEqual(expected);
     expect(response3.value).toEqual(expected);
-    
+
     ws.terminate();
     ws1.terminate();
     ws2.terminate();
@@ -133,11 +133,11 @@ test('Should broadcast ids for new records among clients', async () => {
 
 test('Should get dataset from server', async () => {
     const ws = new WebSocket(serverAddress);
-    
+
     await waitForConnectionOpen(ws);
-    
+
     const { dataset } = await awaitNextMessage(ws, { command : 'reset' });
-    
+
     expect(dataset).toEqual({
         tasksData        : expect.arrayContaining([expect.objectContaining({
             id   : expect.anything(),
@@ -162,6 +162,6 @@ test('Should get dataset from server', async () => {
             intervals : expect.anything()
         })])
     });
-    
+
     ws.terminate();
 });

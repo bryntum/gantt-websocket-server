@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
 
-const serverAddress = 'ws://localhost:8080';
+const serverAddress = 'ws://localhost:8082';
 
 test('Should respond to client if task was added', async () => {
     const ws = new WebSocket(serverAddress);

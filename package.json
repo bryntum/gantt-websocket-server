@@ -4,7 +4,7 @@
   "description": "Web server demo",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js port=8080",
+    "start": "node index.js port=8080",
     "test": "jest tests"
   },
   "author": "Bryntum",
@@ -14,6 +14,7 @@
     "ws": "~6.1.4"
   },
   "devDependencies": {
+    "eslint": "^8.19.0",
     "jest": "~27.5.1"
   }
 }
