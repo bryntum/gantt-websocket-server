@@ -141,6 +141,10 @@ class WebSocketServer extends MessageHandler {
         ws.on('error', error => {
             me.logError(error);
         });
+
+        ws.on('close', () => {
+            me.handleLogout(ws);
+        });
     }
 
     /**

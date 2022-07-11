@@ -10,6 +10,7 @@ class MessageHandler extends AuthorizationHandler {
             'hello'         : this.handleHello.bind(this),
             'login'         : this.handleLogin.bind(this),
             'logout'        : this.handleLogout.bind(this),
+            'projects'      : this.handleProjects.bind(this),
             'reset'         : this.handleReset.bind(this),
             'dataset'       : this.handleDataset.bind(this),
             'projectChange' : this.handleProjectChange.bind(this)
@@ -93,18 +94,22 @@ class MessageHandler extends AuthorizationHandler {
 
         if (logged) {
             ws.userName = login;
-            ws.send(JSON.stringify({ command : 'login', projects : this.dataHandler.getProjectsMetadata(this.getUserProjects(login)) }));
+            ws.send(JSON.stringify({ command : 'login', success : true }));
 
             this.broadcastUsers();
         }
         else {
-            ws.send(JSON.stringify({ command : 'login', error : 'Wrong username/password' }), null, () => ws.close());
+            ws.send(JSON.stringify({ command : 'login', success : false, error : 'Wrong username/password' }), null, () => ws.close());
         }
     }
 
     handleLogout(ws) {
         this.broadcast(ws, { command : 'logout' });
         this.broadcastUsers();
+    }
+
+    handleProjects(ws) {
+        ws.send(JSON.stringify({ command : 'projects', projects : this.dataHandler.getProjectsMetadata(this.getUserProjects(ws.userName)) }));
     }
 
     handleHello(ws, data) {

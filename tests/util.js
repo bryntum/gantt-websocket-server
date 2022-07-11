@@ -53,10 +53,10 @@ async function waitForResponse(client, request, ignoreError) {
  * This function sends request data over the client ws connection and returns next message from the server. If request
  * is null, client will wait for message.
  * @param client Web socket client instance.
- * @param {Object|null} request Data to send to the server. If null, function will only assert next message from the
+ * @param {Object} [request] Data to send to the server. If null, function will only assert next message from the
  * server.
  * @param {Boolean} ignoreError Pass true to not log error messages for expected timeouts
- * @returns {Promise<void>}
+ * @returns {Promise<Object>}
  */
 async function awaitNextMessage(client, request, ignoreError = false) {
     await waitForConnectionOpen(client);
@@ -64,7 +64,41 @@ async function awaitNextMessage(client, request, ignoreError = false) {
     return waitForResponse(client, request, ignoreError);
 }
 
+/**
+ * This function sends request data over the client ws connection and returns next matching command from the server.
+ * If request is null, client will wait for message.
+ * @param client Web socket client instance.
+ * @param {String} command Web socket client instance.
+ * @param {Object} [request] Data to send to the server. If null, function will only assert next message from the
+ * server.
+ * @returns {Promise<Object>}
+ */
+async function awaitNextCommand(client, command, request) {
+    await waitForConnectionOpen(client);
+
+    return Promise.race([
+        failAfter(),
+        new Promise(resolve => {
+            function handler(message) {
+                const data = JSON.parse(message);
+
+                if (data.command === command) {
+                    client.off('message', handler);
+                    resolve(data);
+                }
+            }
+
+            client.on('message', handler);
+
+            if (request) {
+                client.send(JSON.stringify(request));
+            }
+        })
+    ]);
+}
+
 module.exports = {
     waitForConnectionOpen,
-    awaitNextMessage
+    awaitNextMessage,
+    awaitNextCommand
 };
