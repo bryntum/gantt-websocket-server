@@ -7,13 +7,12 @@ class MessageHandler extends AuthorizationHandler {
         super(config);
 
         this.handlersMap = {
-            'hello'         : this.handleHello.bind(this),
             'login'         : this.handleLogin.bind(this),
-            'logout'        : this.handleLogout.bind(this),
-            'projects'      : this.handleProjects.bind(this),
-            'reset'         : this.handleReset.bind(this),
-            'dataset'       : this.handleDataset.bind(this),
-            'projectChange' : this.handleProjectChange.bind(this)
+            'logout'        : this.requireAuth(this.handleLogout),
+            'projects'      : this.requireAuth(this.handleProjects),
+            'reset'         : this.requireAuth(this.handleReset),
+            'dataset'       : this.requireAuth(this.handleDataset),
+            'projectChange' : this.requireAuth(this.handleProjectChange)
         }
 
         this.dataHandler = new DataHandler();

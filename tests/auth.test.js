@@ -132,3 +132,19 @@ test('Should broadcast logout on logout', async () => {
 
     expect(logout).toEqual({ command : 'logout', userName : 'bar' });
 });
+
+test('None of the commands should work if user is not logged', async () => {
+    const ws = new WebSocket(server.address);
+
+    for (const command of [
+        'logout',
+        'projects',
+        'reset',
+        'dataset',
+        'projectChange'
+    ]) {
+        const got = await awaitNextMessage(ws, { command });
+
+        expect(got).toEqual({ command, success : false, error : 'Authentication required' });
+    }
+});

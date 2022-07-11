@@ -50,14 +50,43 @@ class AuthorizationHandler extends Loggable {
         return this.getUserProjects(username).includes(projectId);
     }
 
+    /**
+     * Returns user group name
+     * @param {String} username
+     * @returns {String}
+     */
     getUserGroup(username) {
         return username in USERS ? USERS[username].group : 'anonymous'
     }
 
+    /**
+     * Returns list of project ids user is allowed to access
+     * @param {String} username
+     * @returns {Number[]}
+     */
     getUserProjects(username) {
         const group = this.getUserGroup(username);
 
         return ACCESS_RIGHTS[group];
+    }
+
+    /**
+     * Decorates message handler with auth validation
+     * @param {Function} fn
+     * @returns {Function}
+     */
+    requireAuth(fn) {
+        const me = this;
+
+        return function (ws, data) {
+            if (ws.userName) {
+                return fn.call(me, ws, data);
+            }
+            else {
+                ws.send(JSON.stringify({ command : data.command, success : false, error : 'Authentication required' }))
+
+            }
+        };
     }
 }
 
