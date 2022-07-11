@@ -5,12 +5,12 @@ class DataHandler {
         this.storage = new Storage();
     }
 
-    get dataset() {
-        return this.storage.dataset;
+    getProjectData(id) {
+        return this.storage.getProjectData(id);
     }
 
-    get project() {
-        return this.storage.project;
+    getProjectsMetadata(ids) {
+        return this.storage.getProjectsMetadata(ids);
     }
 
     reset() {

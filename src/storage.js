@@ -73,33 +73,61 @@ class TreeStore extends Store {
 // This class emulates backend storage, keeping data, updating ids etc. It should be replaced with a proper backend
 class Storage {
     constructor() {
-        const data = JSON.parse(fs.readFileSync('data/launch-saas.json'));
+        const projects = this.projects = [
+            { id : 1, name : 'SaaS', source : 'data/saas.json'},
+            { id : 2, name : 'Website', source : 'data/website.json'},
+            { id : 3, name : 'Backend', source : 'data/backend.json'},
+        ];
 
         this.counter = 100;
-        this.tasks = new TreeStore(data.tasks.rows);
-        this.resources = new Store(data.resources.rows);
-        this.dependencies = new Store(data.dependencies.rows);
-        this.assignments = new Store(data.assignments.rows);
-        this.calendars = new Store(data.calendars.rows);
-        this.projectMeta = data.project;
+
+        projects.forEach(project => {
+            const data = JSON.parse(fs.readFileSync(project.source));
+
+            project.data = {
+                tasks        : new TreeStore(data.tasks.rows),
+                resources    : new Store(data.resources.rows),
+                dependencies : new Store(data.dependencies.rows),
+                assignments  : new Store(data.assignments.rows),
+                calendars    : new Store(data.calendars.rows),
+                projectMeta  : data.project
+            };
+        });
     }
 
     generateId() {
         return ++this.counter;
     }
 
-    get dataset() {
+    getProjectData(id) {
+        const
+            {
+                tasks,
+                resources,
+                dependencies,
+                assignments,
+                calendars,
+                projectMeta
+            } = this.projects.find(project => project.id === id);
+
         return {
-            tasksData        : this.tasks.dataset,
-            resourcesData    : this.resources.dataset,
-            dependenciesData : this.dependencies.dataset,
-            assignmentsData  : this.assignments.dataset,
-            calendarsData    : this.calendars.dataset
+            tasksData        : tasks.dataset,
+            resourcesData    : resources.dataset,
+            dependenciesData : dependencies.dataset,
+            assignmentsData  : assignments.dataset,
+            calendarsData    : calendars.dataset,
+            project          : projectMeta
         };
     }
 
-    get project() {
-        return this.projectMeta;
+    getProjectsMetadata(ids) {
+        return this.projects.reduce((result, { id, name }) => {
+            if (ids.includes(id)) {
+                result.push({ id, name });
+            }
+
+            return result;
+        }, []);
     }
 }
 

@@ -41,7 +41,7 @@ async function waitForResponse(client, request, ignoreError) {
                 client.send(JSON.stringify(request));
             }
         })
-    ]).catch(e => {
+    ]).catch(() => {
         // catch exception, do nothing
         if (!ignoreError) {
             console.log('Request timeout for client', client);

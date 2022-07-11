@@ -1,0 +1,33 @@
+{
+    "success"      : true,
+    "project"      : {
+        "startDate"    : "2019-01-14",
+        "hoursPerDay"  : 24,
+        "daysPerWeek"  : 5,
+        "daysPerMonth" : 20
+    },
+    "calendars"    : {
+        "rows" : []
+    },
+    "tasks"        : {
+        "rows" : [
+            {
+                "id" : 1,
+                "name": "Launch website",
+                "duration": 5
+            }
+        ]
+    },
+    "dependencies" : {
+        "rows" : []
+    },
+    "resources"    : {
+        "rows" : []
+    },
+    "assignments"  : {
+        "rows" : []
+    },
+    "timeRanges"   : {
+        "rows" : []
+    }
+}

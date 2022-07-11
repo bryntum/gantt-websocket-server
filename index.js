@@ -1,3 +1,12 @@
+#!/usr/bin/env node
+
+/**
+ * Server accepts command line arguments
+ * port - server port
+ * resetDelay - data reset delay in seconds. 0 - don't use data reset. Default is 5 minutes.
+ * Example: "node server.js port=8181 resetDelay=60"
+ */
+
 const
     { WebSocketServer } = require('./src/server.js'),
     args                = process.argv.slice(2).reduce((acc, arg) => {
