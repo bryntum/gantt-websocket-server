@@ -97,8 +97,33 @@ async function awaitNextCommand(client, command, request) {
     ]);
 }
 
+/**
+ * Logs client on the websocket server
+ * @param client
+ * @param {String} login=admin
+ * @param {String} password=admin
+ * @returns {Promise<String[]>}
+ */
+async function awaitAuth(client, login = 'admin', password = 'admin') {
+    await waitForConnectionOpen(client);
+
+    const [{ success }, { users }] = await Promise.all([
+        awaitNextCommand(client, 'login', { command : 'login', login, password }),
+        awaitNextCommand(client, 'users')
+    ]);
+
+    if (success) {
+        return users;
+    }
+    else {
+        return [];
+    }
+}
+
 module.exports = {
+    awaitTimeout,
     waitForConnectionOpen,
     awaitNextMessage,
-    awaitNextCommand
+    awaitNextCommand,
+    awaitAuth
 };

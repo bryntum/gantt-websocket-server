@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
-const { awaitNextMessage, awaitNextCommand } = require('./util.js');
+const { awaitTimeout, awaitNextMessage, awaitNextCommand, waitForConnectionOpen } = require('./util.js');
 
 const server = new WebSocketServer({ port : 8083 });
 
@@ -105,6 +105,9 @@ test('Should broadcast logout on close', async () => {
     const logout = await logoutMessagePromise;
 
     expect(logout).toEqual({ command : 'logout', userName : 'bar' });
+
+    client2.terminate();
+    client1.terminate();
 });
 
 test('Should broadcast logout on logout', async () => {
@@ -131,6 +134,9 @@ test('Should broadcast logout on logout', async () => {
     const logout = await logoutMessagePromise;
 
     expect(logout).toEqual({ command : 'logout', userName : 'bar' });
+
+    client2.terminate();
+    client1.terminate();
 });
 
 test('None of the commands should work if user is not logged', async () => {
@@ -147,4 +153,27 @@ test('None of the commands should work if user is not logged', async () => {
 
         expect(got).toEqual({ command, success : false, error : 'Authentication required' });
     }
+
+    ws.terminate();
+});
+
+test('Login procedure should have specific amount of messages', async () => {
+    const ws = new WebSocket(server.address);
+
+    await waitForConnectionOpen(ws);
+
+    const messages = [];
+
+    ws.on('message', msg => messages.push(JSON.parse(msg)));
+
+    ws.send(JSON.stringify({ command : 'login', login : 'admin', password : 'admin' }));
+
+    await awaitTimeout(1000);
+
+    expect(messages).toEqual([
+        { command : 'login', success : true },
+        { command : 'users', users : ['admin'] }
+    ]);
+
+    ws.terminate();
 });

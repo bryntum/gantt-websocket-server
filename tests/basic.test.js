@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
-const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
+const { waitForConnectionOpen, awaitNextMessage, awaitAuth } = require('./util.js');
 
 const server = new WebSocketServer({ port : 8081 });
 
@@ -11,25 +11,32 @@ afterAll(() => server.destroy());
 test('Should greet new user', async () => {
     const ws = new WebSocket(server.address);
 
-    const request = {
-        command  : 'hello',
-        userName : 'Foo'
-    };
+    const users = await awaitAuth(ws);
 
-    const expected = expect.objectContaining({
-        command : 'users',
-        users   : expect.arrayContaining(['Foo'])
-    });
+    expect(users).toEqual(expect.arrayContaining(['admin']));
 
-    const got = await awaitNextMessage(ws, request);
+    ws.terminate();
+});
 
-    expect(got).toEqual(expected);
+test('Should return error to the client', async () => {
+    const ws = new WebSocket(server.address);
+
+    await waitForConnectionOpen(ws);
+
+    // send wrong data object
+    ws.send('{ command: "login"');
+
+    const got = await awaitNextMessage(ws);
+
+    expect(got).toEqual({ command : 'error', message : expect.any(String) });
 
     ws.terminate();
 });
 
 test('Should generate ids for new records', async () => {
     const ws = new WebSocket(server.address);
+
+    await awaitAuth(ws);
 
     const request = {
         command : 'projectChange',

@@ -131,13 +131,10 @@ class WebSocketServer extends MessageHandler {
                 handler.call(me, ws, data);
             }
             catch (error) {
-                // log error to console and reset data
-                me.logError(error);
-                me.resetDataSet();
+                ws.send(JSON.stringify({ command : 'error', message : error.message }));
             }
         });
 
-        // Broadcast when client disconnects
         ws.on('error', error => {
             me.logError(error);
         });
