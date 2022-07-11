@@ -51,7 +51,8 @@ class MessageHandler extends AuthorizationHandler {
         data.userName = sender ? sender.userName : undefined;
 
         this.wss.clients.forEach(client => {
-            if (client !== sender && client.readyState === WebSocket.OPEN) {
+            // Only send broadcast messages to authorized clients
+            if (client !== sender && client.readyState === WebSocket.OPEN && client.userName) {
                 client.send(JSON.stringify(data));
                 this.debugLog(`>>> ${JSON.stringify(data)}, to: ${client.userName}`);
             }

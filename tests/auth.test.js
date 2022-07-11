@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
-const { awaitTimeout, awaitNextMessage, awaitNextCommand, waitForConnectionOpen } = require('./util.js');
+const { awaitTimeout, awaitNextMessage, awaitNextCommand, waitForConnectionOpen, awaitAuth } = require('./util.js');
 
 const server = new WebSocketServer({ port : 8083 });
 
@@ -176,4 +176,26 @@ test('Login procedure should have specific amount of messages', async () => {
     ]);
 
     ws.terminate();
+});
+
+test('Should not send messages to connected but unathorized users', async () => {
+    const client1 = new WebSocket(server.address);
+
+    const client2 = new WebSocket(server.address);
+
+    await waitForConnectionOpen(client2);
+
+    let counter = 0;
+
+    client2.on('message', () => counter++);
+
+    await awaitAuth(client1);
+
+    // Wait for some time to receive all possible messages
+    await awaitTimeout(500);
+
+    expect(counter).toBe(0);
+
+    client2.terminate();
+    client1.terminate();
 });
