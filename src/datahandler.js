@@ -27,12 +27,14 @@ class DataHandler {
         }
     }
 
-    handleProjectChanges(changes) {
+    handleProjectChanges(projectId, changes) {
         const ID_PHANTOMID_MAP = new Map();
         const PHANTOMID_ID_MAP = new Map();
 
+        const project = this.storage.getProject(projectId);
+
         for (const key in changes) {
-            this.handleStoreChanges(this.storage[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
+            this.handleStoreChanges(project.data[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
         }
 
         // Changes object already contains correct ids

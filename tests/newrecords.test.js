@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { waitForConnectionOpen, awaitNextMessage } = require('./util.js');
+const { waitForConnectionOpen, awaitNextMessage, awaitAuth } = require('./util.js');
 const { WebSocketServer } = require('../src/server.js');
 
 const server = new WebSocketServer({ port : 8082 });
@@ -11,8 +11,11 @@ afterAll(() => server.destroy());
 test('Should respond to client if task was added', async () => {
     const ws = new WebSocket(server.address);
 
+    await awaitAuth(ws);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 added : [{ $PhantomId : 'newrec1' }]
@@ -31,6 +34,7 @@ test('Should respond to client if task was added', async () => {
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
@@ -59,8 +63,11 @@ test('Should respond to client if task was added', async () => {
 test('Should respond to client if resource was added', async () => {
     const ws = new WebSocket(server.address);
 
+    await awaitAuth(ws);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [{ id : 1 }]
@@ -79,6 +86,7 @@ test('Should respond to client if resource was added', async () => {
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
@@ -107,8 +115,11 @@ test('Should respond to client if resource was added', async () => {
 test('Should respond to client if dependency was added', async () => {
     const ws = new WebSocket(server.address);
 
+    await awaitAuth(ws);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [{ id : 1 }]
@@ -127,6 +138,7 @@ test('Should respond to client if dependency was added', async () => {
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
@@ -155,8 +167,11 @@ test('Should respond to client if dependency was added', async () => {
 test('Should respond to client if assignment was added', async () => {
     const ws = new WebSocket(server.address);
 
+    await awaitAuth(ws);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [{ id : 1 }]
@@ -175,6 +190,7 @@ test('Should respond to client if assignment was added', async () => {
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
@@ -204,8 +220,14 @@ test('Should not send response to the sender if no records were added', async ()
     const ws = new WebSocket(server.address);
     const ws1 = new WebSocket(server.address);
 
+    await Promise.all([
+        awaitAuth(ws),
+        awaitAuth(ws1)
+    ]);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [{ id : 1 }]
@@ -224,6 +246,7 @@ test('Should not send response to the sender if no records were added', async ()
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
             tasks : {
                 updated : [expect.objectContaining({ id : 1 })]
@@ -254,4 +277,5 @@ test('Should not send response to the sender if no records were added', async ()
     expect(response2.value).toEqual(expected);
 
     ws.terminate();
+    ws1.terminate();
 });

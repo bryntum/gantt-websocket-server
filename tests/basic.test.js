@@ -40,17 +40,18 @@ test('Should generate ids for new records', async () => {
 
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
-            tasks : {
+            tasks        : {
                 added : [{ $PhantomId : 'newrec1' }]
             },
-            resources : {
+            resources    : {
                 added : [{ $PhantomId : 'newrec2' }]
             },
             dependencies : {
                 added : [{ $PhantomId : 'newrec3' }]
             },
-            assignments : {
+            assignments  : {
                 added : [{ $PhantomId : 'newrec4' }]
             }
         }
@@ -58,6 +59,7 @@ test('Should generate ids for new records', async () => {
 
     const expected = expect.objectContaining({
         command  : 'projectChange',
+        project  : 1,
         changes  : {
             tasks : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
@@ -86,19 +88,26 @@ test('Should broadcast ids for new records among clients', async () => {
     const ws1 = new WebSocket(server.address);
     const ws2 = new WebSocket(server.address);
 
+    await Promise.all([
+        awaitAuth(ws),
+        awaitAuth(ws1),
+        awaitAuth(ws2)
+    ]);
+
     const request = {
         command : 'projectChange',
+        project : 1,
         changes : {
-            tasks : {
+            tasks        : {
                 added : [{ $PhantomId : 'newrec1' }]
             },
-            resources : {
+            resources    : {
                 added : [{ $PhantomId : 'newrec2' }]
             },
             dependencies : {
                 added : [{ $PhantomId : 'newrec3' }]
             },
-            assignments : {
+            assignments  : {
                 added : [{ $PhantomId : 'newrec4' }]
             }
         }
@@ -106,27 +115,22 @@ test('Should broadcast ids for new records among clients', async () => {
 
     const expected = expect.objectContaining({
         command : 'projectChange',
+        project : 1,
         changes : {
-            tasks : {
+            tasks        : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
             },
-            resources : {
+            resources    : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(Number) })]
             },
             dependencies : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(Number) })]
             },
-            assignments : {
+            assignments  : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
             }
         }
     });
-
-    await Promise.allSettled([
-        waitForConnectionOpen(ws),
-        waitForConnectionOpen(ws1),
-        waitForConnectionOpen(ws2)
-    ]);
 
     const [response1, response2, response3] = await Promise.allSettled([
         awaitNextMessage(ws, request),
@@ -146,9 +150,9 @@ test('Should broadcast ids for new records among clients', async () => {
 test('Should get dataset from server', async () => {
     const ws = new WebSocket(server.address);
 
-    await waitForConnectionOpen(ws);
+    await awaitAuth(ws);
 
-    const { dataset } = await awaitNextMessage(ws, { command : 'reset' });
+    const { dataset } = await awaitNextMessage(ws, { command : 'dataset', project : 1 });
 
     expect(dataset).toEqual({
         tasksData        : expect.arrayContaining([expect.objectContaining({

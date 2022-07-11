@@ -131,7 +131,7 @@ class WebSocketServer extends MessageHandler {
                 handler.call(me, ws, data);
             }
             catch (error) {
-                ws.send(JSON.stringify({ command : 'error', message : error.message }));
+                ws.send(JSON.stringify({ command : 'error', message : error.message + error.stack }));
             }
         });
 

@@ -99,7 +99,17 @@ class Storage {
         return ++this.counter;
     }
 
+    getProject(id) {
+        return this.projects.find(project => project.id == id);
+    }
+
     getProjectData(id) {
+        const project = this.getProject(id);
+
+        if (!project) {
+            throw new Error(`Project ${id} not found`);
+        }
+
         const
             {
                 tasks,
@@ -108,7 +118,7 @@ class Storage {
                 assignments,
                 calendars,
                 projectMeta
-            } = this.projects.find(project => project.id === id);
+            } = project.data;
 
         return {
             tasksData        : tasks.dataset,

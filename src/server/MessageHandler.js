@@ -131,9 +131,9 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleDataset(ws, data) {
-        const dataset = this.dataHandler.getProjectData(1);
+        const dataset = this.dataHandler.getProjectData(data.project);
 
-        data.project = dataset.project;
+        data.projectMeta = dataset.project;
         delete dataset.project;
 
         data.dataset = dataset;
@@ -144,13 +144,14 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleProjectChange(ws, data) {
-        const { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(data.changes);
+        const { project } = data;
+        const { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(project, data.changes);
 
         if (hasNewRecords) {
-            this.broadcast(null, { command : 'projectChange', changes });
+            this.broadcast(null, { command : 'projectChange', project, changes });
         }
         else {
-            this.broadcast(ws, { command : 'projectChange', changes });
+            this.broadcast(ws, { command : 'projectChange', project, changes });
         }
     }
     //#endregion
