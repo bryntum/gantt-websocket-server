@@ -1,5 +1,5 @@
 const
-    { WebSocketServer } = require('./server.js'),
+    { WebSocketServer } = require('./src/server.js'),
     args                = process.argv.slice(2).reduce((acc, arg) => {
         const [k, v = true] = arg.split('=');
         acc[k] = v;

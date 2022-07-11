@@ -1,12 +1,14 @@
 const { Storage } = require('./storage.js');
 
 class DataHandler {
-    storage = new Storage()
+    constructor() {
+        this.storage = new Storage();
+    }
 
     get dataset() {
         return this.storage.dataset;
     }
-    
+
     get project() {
         return this.storage.project;
     }
