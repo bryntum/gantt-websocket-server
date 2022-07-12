@@ -7,7 +7,7 @@ async function awaitTimeout(timeout = 100) {
 async function failAfter(timeout = 1000) {
     await awaitTimeout(timeout);
 
-    return Promise.reject();
+    return Promise.reject('timeout');
 }
 
 /**
