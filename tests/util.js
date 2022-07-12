@@ -107,12 +107,12 @@ async function awaitNextCommand(client, command, request) {
 async function awaitAuth(client, login = 'admin', password = 'admin') {
     await waitForConnectionOpen(client);
 
-    const [{ success }, { users }] = await Promise.all([
+    const [{ error }, { users }] = await Promise.all([
         awaitNextCommand(client, 'login', { command : 'login', login, password }),
         awaitNextCommand(client, 'users')
     ]);
 
-    if (success) {
+    if (!error) {
         return users;
     }
     else {

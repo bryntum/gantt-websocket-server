@@ -80,11 +80,24 @@ class AuthorizationHandler extends Loggable {
 
         return function (ws, data) {
             if (ws.userName) {
-                return fn.call(me, ws, data);
+                let authorized;
+
+                if (['reset', 'dataset', 'projectChange'].includes(data.command)) {
+                    authorized = me.isAuthorized(ws.userName, data.project);
+                }
+                else {
+                    authorized = true;
+                }
+
+                if (authorized) {
+                    return fn.call(me, ws, data);
+                }
+                else {
+                    ws.send(JSON.stringify({ command : data.command, error : 'Authorization required' }))
+                }
             }
             else {
-                ws.send(JSON.stringify({ command : data.command, success : false, error : 'Authentication required' }))
-
+                ws.send(JSON.stringify({ command : data.command, error : 'Authentication required' }))
             }
         };
     }

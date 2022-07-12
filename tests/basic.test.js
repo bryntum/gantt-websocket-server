@@ -181,3 +181,8 @@ test('Should get dataset from server', async () => {
 
     ws.terminate();
 });
+
+//TODO:
+// 1. check if user has auth to make changes to project
+// 2. broadcast changes only to authorized clients
+// 3. broadcase project changes only to clients who loaded the project. Need to keep track of user-project on the backend

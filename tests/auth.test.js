@@ -19,7 +19,7 @@ test('Should check user login/password', async () => {
 
     const got = await awaitNextMessage(ws, request);
 
-    expect(got).toEqual({ command : 'login', success : false, error : expect.any(String) });
+    expect(got).toEqual({ command : 'login', error : expect.any(String) });
 
     ws.terminate();
 });
@@ -35,7 +35,7 @@ test('Should let in anonymous user', async () => {
 
     const got = await awaitNextMessage(ws, request);
 
-    expect(got).toEqual({ command : 'login', success : true });
+    expect(got).toEqual({ command : 'login' });
 
     ws.terminate();
 });
@@ -151,7 +151,7 @@ test('None of the commands should work if user is not logged', async () => {
     ]) {
         const got = await awaitNextMessage(ws, { command });
 
-        expect(got).toEqual({ command, success : false, error : 'Authentication required' });
+        expect(got).toEqual({ command, error : 'Authentication required' });
     }
 
     ws.terminate();
@@ -171,14 +171,14 @@ test('Login procedure should have specific amount of messages', async () => {
     await awaitTimeout(1000);
 
     expect(messages).toEqual([
-        { command : 'login', success : true },
+        { command : 'login' },
         { command : 'users', users : ['admin'] }
     ]);
 
     ws.terminate();
 });
 
-test('Should not send messages to connected but unathorized users', async () => {
+test('Should not send messages to connected but unauthenticated users', async () => {
     const client1 = new WebSocket(server.address);
 
     const client2 = new WebSocket(server.address);
