@@ -11,13 +11,7 @@ afterAll(() => server.destroy());
 test('Should check user login/password', async () => {
     const ws = new WebSocket(server.address);
 
-    const request = {
-        command  : 'login',
-        login    : 'admin',
-        password : ''
-    };
-
-    const got = await awaitNextMessage(ws, request);
+    const got = await awaitNextMessage(ws, { command : 'login', login : 'admin', password : '' });
 
     expect(got).toEqual({ command : 'login', error : expect.any(String) });
 
@@ -27,23 +21,21 @@ test('Should check user login/password', async () => {
 test('Should let in anonymous user', async () => {
     const ws = new WebSocket(server.address);
 
-    const request = {
-        command  : 'login',
-        login    : 'foo',
-        password : ''
-    };
-
-    const got = await awaitNextMessage(ws, request);
+    const got = await awaitAuth(ws, 'foo');
 
     expect(got).toEqual({ command : 'login' });
 
     ws.terminate();
 });
 
-test('On login should return list of project user is authorized to access', async () => {
+test('Should return list of project user is authorized to access', async () => {
     const ws = new WebSocket(server.address);
 
-    const expected = expect.objectContaining({
+    await awaitAuth(ws);
+
+    const got = await awaitNextCommand(ws, 'projects', { command : 'projects' });
+
+    expect(got).toEqual(expect.objectContaining({
         command  : 'projects',
         projects : expect.arrayContaining([
             {
@@ -59,24 +51,7 @@ test('On login should return list of project user is authorized to access', asyn
                 name : 'Backend'
             }
         ])
-    });
-
-    await awaitNextMessage(ws, {
-        command  : 'login',
-        login    : 'admin',
-        password : 'admin'
-    });
-
-    const promise = awaitNextCommand(ws, 'projects');
-
-    await Promise.all([
-        promise,
-        awaitNextMessage(ws, { command : 'projects' })
-    ]);
-
-    const got = await promise;
-
-    expect(got).toEqual(expected);
+    }));
 
     ws.terminate();
 });
@@ -146,9 +121,9 @@ test('Login procedure should have specific amount of messages', async () => {
 
     ws.on('message', msg => messages.push(JSON.parse(msg)));
 
-    ws.send(JSON.stringify({ command : 'login', login : 'admin', password : 'admin' }));
+    await awaitAuth(ws);
 
-    await awaitTimeout(1000);
+    await awaitTimeout();
 
     expect(messages).toEqual([
         { command : 'login' },

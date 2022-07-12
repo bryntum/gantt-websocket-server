@@ -11,7 +11,10 @@ afterAll(() => server.destroy());
 test('Should greet new user', async () => {
     const ws = new WebSocket(server.address);
 
-    const users = await awaitAuth(ws);
+    const [{ users }] = await Promise.all([
+        awaitNextCommand(ws, 'users'),
+        awaitAuth(ws)
+    ]);
 
     expect(users).toEqual(expect.arrayContaining(['admin']));
 
@@ -76,7 +79,7 @@ test('Should generate ids for new records', async () => {
         }
     });
 
-    const got = await awaitNextMessage(ws, request);
+    const got = await awaitNextCommand(ws, 'projectChange', request);
 
     expect(got).toEqual(expected);
 

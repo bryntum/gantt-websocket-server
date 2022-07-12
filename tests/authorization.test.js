@@ -45,7 +45,7 @@ test('Unauthorized user should not be able to make changes to project', async ()
     ws.terminate();
 });
 
-test('Unauthorized user should not be able to rest project', async () => {
+test('Unauthorized user should not be able to reset project', async () => {
     const ws = new WebSocket(server.address);
 
     await awaitAuth(ws, 'foo');

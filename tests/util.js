@@ -93,7 +93,7 @@ async function awaitNextCommand(client, command, request) {
 }
 
 /**
- * Logs client on the websocket server
+ * Logs client on the websocket server. Returns response of the login command
  * @param client
  * @param {String} login=admin
  * @param {String} password=admin
@@ -102,17 +102,12 @@ async function awaitNextCommand(client, command, request) {
 async function awaitAuth(client, login = 'admin', password = 'admin') {
     await waitForConnectionOpen(client);
 
-    const [{ error }, { users }] = await Promise.all([
+    const [response] = await Promise.all([
         awaitNextCommand(client, 'login', { command : 'login', login, password }),
         awaitNextCommand(client, 'users')
     ]);
 
-    if (!error) {
-        return users;
-    }
-    else {
-        return [];
-    }
+    return response;
 }
 
 /**

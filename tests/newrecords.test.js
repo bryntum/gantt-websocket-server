@@ -256,11 +256,11 @@ test('Should not send response to the sender if no records were added', async ()
     });
 
     const [response1, response2] = await Promise.allSettled([
-        awaitNextCommand(ws, 'projectChange', request, true),
+        awaitNextCommand(ws, 'projectChange', request),
         awaitNextCommand(ws1, 'projectChange')
     ]);
 
-    expect(response1.value).toBe(undefined);
+    expect(response1.reason).toBe('timeout');
     expect(response2.value).toEqual(expected);
 
     ws.terminate();
