@@ -120,10 +120,25 @@ async function awaitAuth(client, login = 'admin', password = 'admin') {
     }
 }
 
+/**
+ * Logs user in and requests dataset
+ * @param client
+ * @param {Number} project
+ * @param {String} login
+ * @param {String} password
+ * @returns {Promise<void>}
+ */
+async function awaitDataset(client, project, login = 'admin', password = 'admin') {
+    await awaitAuth(client, login, password);
+
+    return awaitNextCommand(client, 'dataset', { command : 'dataset', project });
+}
+
 module.exports = {
     awaitTimeout,
     waitForConnectionOpen,
     awaitNextMessage,
     awaitNextCommand,
-    awaitAuth
+    awaitAuth,
+    awaitDataset
 };

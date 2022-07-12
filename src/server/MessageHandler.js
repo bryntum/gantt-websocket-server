@@ -16,29 +16,43 @@ class MessageHandler extends AuthorizationHandler {
         }
 
         this.dataHandler = new DataHandler();
+
+        this.projectSubscribersMap = {};
     }
 
     /**
      * Reads dataset from file
      */
-    readDataSet() {
+    readDataSet(id) {
         try {
             this.debugLog('dataset');
-            this.dataHandler.reset();
+            this.dataHandler.reset(id);
         }
         catch (error) {
             this.logError(error);
         }
     }
 
+    resetEntireDataset() {
+        this.debugLog('Reset dataset by server');
+        this.readDataSet();
+        this.broadcast(null, { command : 'dataset', dataset : this.dataHandler.dataset });
+        this.broadcast({ userName : 'Server' }, { command : 'reset' });
+    }
+
     /**
      * Resets server dataset and broadcasts it to all connected clients
      */
-    resetDataSet(userName = 'Server') {
-        this.debugLog('Reset dataset by ' + userName);
-        this.readDataSet();
-        this.broadcast(null, { command : 'dataset', dataset : this.dataHandler.dataset });
-        this.broadcast({ userName }, { command : 'reset' });
+    resetDataSet(project, userName = 'Server') {
+        if (userName === 'Server') {
+            this.resetEntireDataset();
+        }
+        else {
+            this.debugLog(`Reset dataset by ${userName}`);
+            this.readDataSet(project);
+            this.broadcastProjectChanges(null, { command : 'dataset', project, dataset : this.dataHandler.getProjectData(project) });
+            this.broadcastProjectChanges({ userName }, { command : 'reset', project });
+        }
     }
 
     /**
@@ -55,6 +69,17 @@ class MessageHandler extends AuthorizationHandler {
             if (client !== sender && client.readyState === WebSocket.OPEN && client.userName) {
                 client.send(JSON.stringify(data));
                 this.debugLog(`>>> ${JSON.stringify(data)}, to: ${client.userName}`);
+            }
+        });
+    }
+
+    broadcastProjectChanges(ws, data) {
+        const { project } = data;
+        const message = JSON.stringify(data);
+
+        this.projectSubscribersMap[project].forEach(client => {
+            if (client !== ws) {
+                client.send(message);
             }
         });
     }
@@ -104,6 +129,9 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleLogout(ws) {
+        // When client disconnects we need to unsubscribe it from project updates
+        Object.values(this.projectSubscribersMap).forEach(map => map.delete(ws));
+
         this.broadcast(ws, { command : 'logout' });
         this.broadcastUsers();
     }
@@ -126,12 +154,21 @@ class MessageHandler extends AuthorizationHandler {
         this.broadcast(ws, data);
     }
 
-    handleReset(ws) {
-        this.resetDataSet(ws.userName);
+    handleReset(ws, { command, project }) {
+        if (this.isClientSubscribedToProject(ws, project)) {
+            this.resetDataSet(project, ws.userName);
+        }
+        else {
+            ws.send(JSON.stringify({ command, project, error : 'Subscription to project is required. Load project first' }));
+        }
     }
 
     handleDataset(ws, data) {
-        const dataset = this.dataHandler.getProjectData(data.project);
+        const { project } = data;
+
+        this.subscribeClientToProject(ws, project);
+
+        const dataset = this.dataHandler.getProjectData(project);
 
         data.projectMeta = dataset.project;
         delete dataset.project;
@@ -144,17 +181,38 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleProjectChange(ws, data) {
-        const { project } = data;
-        const { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(project, data.changes);
+        const { command, project } = data;
 
-        if (hasNewRecords) {
-            this.broadcast(null, { command : 'projectChange', project, changes });
+        if (this.isClientSubscribedToProject(ws, project)) {
+            const { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(project, data.changes);
+
+            if (hasNewRecords) {
+                this.broadcastProjectChanges(null, { command, project, changes });
+            }
+            else {
+                this.broadcastProjectChanges(ws, { command, project, changes });
+            }
         }
         else {
-            this.broadcast(ws, { command : 'projectChange', project, changes });
+            ws.send(JSON.stringify({ command, project, error : 'Subscription to project is required. Load project first' }));
         }
     }
     //#endregion
+
+    // When client requests dataset we subscribe him to that project updates
+    subscribeClientToProject(ws, project) {
+        // First unsubscribe current client from all other datasets
+        Object.values(this.projectSubscribersMap).forEach(map => map.delete(ws));
+
+        // Second add current client to the the new project subscriptions
+        const subscribers = this.projectSubscribersMap[project] = (this.projectSubscribersMap[project] || new Set() );
+
+        subscribers.add(ws);
+    }
+
+    isClientSubscribedToProject(ws, project) {
+        return !!this.projectSubscribersMap[project]?.has(ws);
+    }
 }
 
 module.exports = { MessageHandler };

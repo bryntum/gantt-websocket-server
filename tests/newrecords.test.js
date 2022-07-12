@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { waitForConnectionOpen, awaitNextMessage, awaitAuth } = require('./util.js');
+const { awaitNextCommand, awaitDataset } = require('./util.js');
 const { WebSocketServer } = require('../src/server.js');
 
 const server = new WebSocketServer({ port : 8082 });
@@ -11,7 +11,7 @@ afterAll(() => server.destroy());
 test('Should respond to client if task was added', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
+    await awaitDataset(ws, 1);
 
     const request = {
         command : 'projectChange',
@@ -51,9 +51,7 @@ test('Should respond to client if task was added', async () => {
         }
     });
 
-    await waitForConnectionOpen(ws);
-
-    const response = await awaitNextMessage(ws, request);
+    const response = await awaitNextCommand(ws, 'projectChange', request);
 
     expect(response).toEqual(expected);
 
@@ -63,7 +61,7 @@ test('Should respond to client if task was added', async () => {
 test('Should respond to client if resource was added', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
+    await awaitDataset(ws, 1);
 
     const request = {
         command : 'projectChange',
@@ -103,9 +101,7 @@ test('Should respond to client if resource was added', async () => {
         }
     });
 
-    await waitForConnectionOpen(ws);
-
-    const response = await awaitNextMessage(ws, request);
+    const response = await awaitNextCommand(ws, 'projectChange', request);
 
     expect(response).toEqual(expected);
 
@@ -115,7 +111,7 @@ test('Should respond to client if resource was added', async () => {
 test('Should respond to client if dependency was added', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
+    await awaitDataset(ws, 1);
 
     const request = {
         command : 'projectChange',
@@ -155,9 +151,7 @@ test('Should respond to client if dependency was added', async () => {
         }
     });
 
-    await waitForConnectionOpen(ws);
-
-    const response = await awaitNextMessage(ws, request);
+    const response = await awaitNextCommand(ws, 'projectChange', request);
 
     expect(response).toEqual(expected);
 
@@ -167,7 +161,7 @@ test('Should respond to client if dependency was added', async () => {
 test('Should respond to client if assignment was added', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
+    await awaitDataset(ws, 1);
 
     const request = {
         command : 'projectChange',
@@ -207,9 +201,7 @@ test('Should respond to client if assignment was added', async () => {
         }
     });
 
-    await waitForConnectionOpen(ws);
-
-    const response = await awaitNextMessage(ws, request);
+    const response = await awaitNextCommand(ws, 'projectChange', request);
 
     expect(response).toEqual(expected);
 
@@ -221,8 +213,8 @@ test('Should not send response to the sender if no records were added', async ()
     const ws1 = new WebSocket(server.address);
 
     await Promise.all([
-        awaitAuth(ws),
-        awaitAuth(ws1)
+        awaitDataset(ws, 1),
+        awaitDataset(ws1, 1)
     ]);
 
     const request = {
@@ -263,14 +255,9 @@ test('Should not send response to the sender if no records were added', async ()
         }
     });
 
-    await Promise.allSettled([
-        waitForConnectionOpen(ws),
-        waitForConnectionOpen(ws1)
-    ]);
-
     const [response1, response2] = await Promise.allSettled([
-        awaitNextMessage(ws, request, true),
-        awaitNextMessage(ws1)
+        awaitNextCommand(ws, 'projectChange', request, true),
+        awaitNextCommand(ws1, 'projectChange')
     ]);
 
     expect(response1.value).toBe(undefined);

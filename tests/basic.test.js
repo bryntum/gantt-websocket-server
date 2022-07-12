@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
-const { waitForConnectionOpen, awaitNextMessage, awaitAuth } = require('./util.js');
+const { waitForConnectionOpen, awaitNextMessage, awaitAuth, awaitNextCommand, awaitDataset } = require('./util.js');
 
 const server = new WebSocketServer({ port : 8081 });
 
@@ -36,7 +36,7 @@ test('Should return error to the client', async () => {
 test('Should generate ids for new records', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
+    await awaitDataset(ws, 1);
 
     const request = {
         command : 'projectChange',
@@ -89,9 +89,9 @@ test('Should broadcast ids for new records among clients', async () => {
     const ws2 = new WebSocket(server.address);
 
     await Promise.all([
-        awaitAuth(ws),
-        awaitAuth(ws1),
-        awaitAuth(ws2)
+        awaitDataset(ws, 1),
+        awaitDataset(ws1, 1),
+        awaitDataset(ws2, 1)
     ]);
 
     const request = {
@@ -150,9 +150,7 @@ test('Should broadcast ids for new records among clients', async () => {
 test('Should get dataset from server', async () => {
     const ws = new WebSocket(server.address);
 
-    await awaitAuth(ws);
-
-    const { dataset } = await awaitNextMessage(ws, { command : 'dataset', project : 1 });
+    const { dataset } = await awaitDataset(ws, 1);
 
     expect(dataset).toEqual({
         tasksData        : expect.arrayContaining([expect.objectContaining({
@@ -183,6 +181,4 @@ test('Should get dataset from server', async () => {
 });
 
 //TODO:
-// 1. check if user has auth to make changes to project
-// 2. broadcast changes only to authorized clients
-// 3. broadcase project changes only to clients who loaded the project. Need to keep track of user-project on the backend
+// 1. server reset should only broadcast data to subscribed clients

@@ -13,8 +13,13 @@ class DataHandler {
         return this.storage.getProjectsMetadata(ids);
     }
 
-    reset() {
-        this.storage = new Storage();
+    reset(id) {
+        if (id != null) {
+            this.storage.reset(id);
+        }
+        else {
+            this.storage = new Storage();
+        }
     }
 
     replacePhantomId(record, PHANTOMID_ID_MAP) {

@@ -81,18 +81,26 @@ class Storage {
 
         this.counter = 100;
 
-        projects.forEach(project => {
-            const data = JSON.parse(fs.readFileSync(project.source));
+        projects.forEach(project => this.loadProjectData(project));
+    }
 
-            project.data = {
-                tasks        : new TreeStore(data.tasks.rows),
-                resources    : new Store(data.resources.rows),
-                dependencies : new Store(data.dependencies.rows),
-                assignments  : new Store(data.assignments.rows),
-                calendars    : new Store(data.calendars.rows),
-                projectMeta  : data.project
-            };
-        });
+    loadProjectData(project) {
+        const data = JSON.parse(fs.readFileSync(project.source));
+
+        project.data = {
+            tasks        : new TreeStore(data.tasks.rows),
+            resources    : new Store(data.resources.rows),
+            dependencies : new Store(data.dependencies.rows),
+            assignments  : new Store(data.assignments.rows),
+            calendars    : new Store(data.calendars.rows),
+            projectMeta  : data.project
+        };
+    }
+
+    reset(id) {
+        const project = this.getProject(id);
+
+        this.loadProjectData(project);
     }
 
     generateId() {

@@ -90,7 +90,7 @@ class WebSocketServer extends MessageHandler {
             if (resetDelay > 0) {
                 setInterval(() => {
                     if (me.lastActionTime + resetDelay < new Date().getTime()) {
-                        me.resetDataSet();
+                        me.resetEntireDataset();
                         me.lastActionTime = new Date().getTime();
                     }
                 }, 1000);
