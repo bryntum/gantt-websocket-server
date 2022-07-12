@@ -179,6 +179,3 @@ test('Should get dataset from server', async () => {
 
     ws.terminate();
 });
-
-//TODO:
-// 1. server reset should only broadcast data to subscribed clients

@@ -82,61 +82,41 @@ test('On login should return list of project user is authorized to access', asyn
 });
 
 test('Should broadcast logout on close', async () => {
-    const client1 = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
+    const ws2 = new WebSocket(server.address);
 
-    await awaitNextMessage(client1, { command : 'login', login : 'foo' });
+    await awaitAuth(ws1, 'foo');
+    await awaitAuth(ws2, 'bar');
 
-    const client2 = new WebSocket(server.address);
-
-    await awaitNextMessage(client2, { command : 'login', login : 'bar' });
-
-    const logoutMessagePromise = new Promise(resolve => {
-        client1.on('message', message => {
-            const data = JSON.parse(message);
-
-            if (data.command === 'logout') {
-                resolve(data);
-            }
-        });
-    });
-
-    client2.close();
-
-    const logout = await logoutMessagePromise;
+    const [logout] = await Promise.all([
+        awaitNextCommand(ws1, 'logout'),
+        ws2.close()
+    ]);
 
     expect(logout).toEqual({ command : 'logout', userName : 'bar' });
 
-    client2.terminate();
-    client1.terminate();
+    ws2.terminate();
+    ws1.terminate();
 });
 
 test('Should broadcast logout on logout', async () => {
-    const client1 = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
+    const ws2 = new WebSocket(server.address);
 
-    await awaitNextMessage(client1, { command : 'login', login : 'foo' });
+    await Promise.all([
+        awaitAuth(ws1, 'foo'),
+        awaitAuth(ws2, 'bar')
+    ]);
 
-    const client2 = new WebSocket(server.address);
-
-    await awaitNextMessage(client2, { command : 'login', login : 'bar' });
-
-    const logoutMessagePromise = new Promise(resolve => {
-        client1.on('message', message => {
-            const data = JSON.parse(message);
-
-            if (data.command === 'logout') {
-                resolve(data);
-            }
-        });
-    });
-
-    await awaitNextMessage(client2, { command : 'logout' });
-
-    const logout = await logoutMessagePromise;
+    const [{ value : logout }] = await Promise.allSettled([
+        awaitNextCommand(ws1, 'logout'),
+        awaitNextMessage(ws2, { command : 'logout' })
+    ]);
 
     expect(logout).toEqual({ command : 'logout', userName : 'bar' });
 
-    client2.terminate();
-    client1.terminate();
+    ws2.terminate();
+    ws1.terminate();
 });
 
 test('None of the commands should work if user is not logged', async () => {
@@ -179,23 +159,22 @@ test('Login procedure should have specific amount of messages', async () => {
 });
 
 test('Should not send messages to connected but unauthenticated users', async () => {
-    const client1 = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
+    const ws2 = new WebSocket(server.address);
 
-    const client2 = new WebSocket(server.address);
-
-    await waitForConnectionOpen(client2);
+    await waitForConnectionOpen(ws2);
 
     let counter = 0;
 
-    client2.on('message', () => counter++);
+    ws2.on('message', () => counter++);
 
-    await awaitAuth(client1);
+    await awaitAuth(ws1);
 
     // Wait for some time to receive all possible messages
     await awaitTimeout(500);
 
     expect(counter).toBe(0);
 
-    client2.terminate();
-    client1.terminate();
+    ws2.terminate();
+    ws1.terminate();
 });

@@ -36,8 +36,16 @@ class MessageHandler extends AuthorizationHandler {
     resetEntireDataset() {
         this.debugLog('Reset dataset by server');
         this.readDataSet();
-        this.broadcast(null, { command : 'dataset', dataset : this.dataHandler.dataset });
-        this.broadcast({ userName : 'Server' }, { command : 'reset' });
+
+        Object.entries(this.projectSubscribersMap).forEach(([project, subscribers]) => {
+            const datasetMessage = JSON.stringify({ command : 'dataset', project : Number(project), dataset : this.dataHandler.getProjectData(Number(project)) });
+            const resetMessage = JSON.stringify({ command : 'reset', userName : 'Server' });
+
+            subscribers.forEach(client => {
+                client.send(datasetMessage);
+                client.send(resetMessage);
+            });
+        });
     }
 
     /**

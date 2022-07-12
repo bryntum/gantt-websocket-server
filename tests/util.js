@@ -29,7 +29,7 @@ async function waitForConnectionOpen(client) {
     });
 }
 
-async function waitForResponse(client, request, ignoreError) {
+async function waitForResponse(client, request) {
     return Promise.race([
         failAfter(),
         new Promise(resolve => {
@@ -41,12 +41,7 @@ async function waitForResponse(client, request, ignoreError) {
                 client.send(JSON.stringify(request));
             }
         })
-    ]).catch(() => {
-        // catch exception, do nothing
-        if (!ignoreError) {
-            console.log('Request timeout for client', client);
-        }
-    });
+    ]);
 }
 
 /**
