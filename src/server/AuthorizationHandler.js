@@ -32,7 +32,7 @@ class AuthorizationHandler extends Loggable {
                 result = true;
             }
         }
-        else {
+        else if (typeof username === 'string' && username) {
             // Let in anonymous user
             result = true;
         }

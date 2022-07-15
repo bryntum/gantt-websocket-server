@@ -18,6 +18,20 @@ test('Should check user login/password', async () => {
     ws.terminate();
 });
 
+test('Should not allow empty/non-string login', async () => {
+    const ws = new WebSocket(server.address);
+
+    let got = await awaitNextCommand(ws, 'login', { command : 'login', login : '', password : '' });
+
+    expect(got).toEqual({ command : 'login', error : expect.any(String) });
+
+    got = await awaitNextCommand(ws, 'login', { command : 'login', login : true, password : '' });
+
+    expect(got).toEqual({ command : 'login', error : expect.any(String) });
+
+    ws.terminate();
+});
+
 test('Should let in anonymous user', async () => {
     const ws = new WebSocket(server.address);
 

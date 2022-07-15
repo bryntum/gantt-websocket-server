@@ -132,7 +132,7 @@ class MessageHandler extends AuthorizationHandler {
             this.broadcastUsers();
         }
         else {
-            ws.send(JSON.stringify({ command : 'login', error : 'Wrong username/password' }), null, () => ws.close());
+            ws.send(JSON.stringify({ command : 'login', error : 'Wrong username/password' }));
         }
     }
 
