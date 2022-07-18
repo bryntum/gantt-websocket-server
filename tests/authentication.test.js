@@ -97,12 +97,18 @@ test('Should broadcast logout on logout', async () => {
         awaitAuth(ws2, 'bar')
     ]);
 
-    const [{ value : logout }] = await Promise.allSettled([
+    let counter = 0;
+
+    ws2.on('message', () => ++counter);
+
+    const [result1, result2] = await Promise.allSettled([
         awaitNextCommand(ws1, 'logout'),
-        awaitNextMessage(ws2, { command : 'logout' })
+        awaitNextCommand(ws2, 'logout', { command : 'logout' })
     ]);
 
-    expect(logout).toEqual({ command : 'logout', userName : 'bar' });
+    expect(result1).toEqual(expect.objectContaining({ value : { command : 'logout', userName : 'bar' } }));
+    expect(result2).not.toEqual(expect.objectContaining({ status : 'rejected', reason : 'timeout' }));
+    expect(counter).toEqual(1);
 
     ws2.terminate();
     ws1.terminate();

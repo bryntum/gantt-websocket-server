@@ -14,12 +14,85 @@
             {
                 "id" : 1,
                 "name": "Launch backend",
-                "duration": 5
+                "expanded": true
+            },
+            {
+                "id": 11,
+                "parentId": 1,
+                "name": "Setup database",
+                "duration": 1
+            },
+            {
+                "id": 12,
+                "parentId": 1,
+                "name": "Setup Django",
+                "duration": 1
+            },
+            {
+                "id": 13,
+                "parentId": 1,
+                "name": "Connect ORM",
+                "duration": 1
+            },
+            {
+                "id": 14,
+                "parentId": 1,
+                "name": "Implement views",
+                "duration": 10
+            },
+            {
+                "id": 15,
+                "parentId": 1,
+                "name": "Implement tests",
+                "duration": 10
+            },
+            {
+                "id": 16,
+                "parentId": 1,
+                "name": "Deploy to staging",
+                "duration": 1
+            },
+            {
+                "id": 17,
+                "parentId": 1,
+                "name": "Deploy to production",
+                "duration": 1
             }
         ]
     },
     "dependencies" : {
-        "rows" : []
+        "rows" : [
+            {
+                "id": 1,
+                "from": 11,
+                "to": 13
+            },
+            {
+                "id": 2,
+                "from": 12,
+                "to": 13
+            },
+            {
+                "id": 3,
+                "from": 13,
+                "to": 14
+            },
+            {
+                "id": 4,
+                "from": 13,
+                "to": 15
+            },
+            {
+                "id": 5,
+                "from": 15,
+                "to": 16
+            },
+            {
+                "id": 6,
+                "from": 15,
+                "to": 17
+            }
+        ]
     },
     "resources"    : {
         "rows" : []

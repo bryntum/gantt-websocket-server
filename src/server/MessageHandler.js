@@ -128,6 +128,7 @@ class MessageHandler extends AuthorizationHandler {
         if (logged) {
             ws.userName = login;
             ws.send(JSON.stringify({ command : 'login' }));
+            this.broadcast(ws, { command : 'login' });
 
             this.broadcastUsers();
         }
@@ -140,8 +141,14 @@ class MessageHandler extends AuthorizationHandler {
         // When client disconnects we need to unsubscribe it from project updates
         Object.values(this.projectSubscribersMap).forEach(map => map.delete(ws));
 
-        this.broadcast(ws, { command : 'logout' });
-        this.broadcastUsers();
+        if (ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({ command : 'logout' }));
+            ws.close();
+        }
+        else {
+            this.broadcast(ws, { command : 'logout' });
+            this.broadcastUsers();
+        }
     }
 
     handleProjects(ws) {
