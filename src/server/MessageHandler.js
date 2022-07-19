@@ -59,7 +59,7 @@ class MessageHandler extends AuthorizationHandler {
             this.debugLog(`Reset dataset by ${userName}`);
             this.readDataSet(project);
             this.broadcastProjectChanges(null, { command : 'dataset', project, dataset : this.dataHandler.getProjectData(project) });
-            this.broadcastProjectChanges({ userName }, { command : 'reset', project });
+            this.broadcastProjectChanges(null, { command : 'reset', userName, project });
         }
     }
 
@@ -153,20 +153,6 @@ class MessageHandler extends AuthorizationHandler {
 
     handleProjects(ws) {
         ws.send(JSON.stringify({ command : 'projects', projects : this.dataHandler.getProjectsMetadata(this.getUserProjects(ws.userName)) }));
-    }
-
-    handleHello(ws, data) {
-        // Check for user name
-        ws.userName = (data.userName || '').trim().slice(0, 15);
-
-        if (ws.userName === '') {
-            ws.userName = 'Client';
-        }
-
-        this.broadcastUsers();
-
-        // Send hello message to other clients to greet newcomer
-        this.broadcast(ws, data);
     }
 
     handleReset(ws, { command, project }) {
