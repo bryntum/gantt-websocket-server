@@ -53,7 +53,7 @@ If username or password is incorrect error is returned to the client:
 { "command": "login", "error": "Wrong username/password" }
 ```
 
-If client is not logged in an is trying to access the project data or send updates sever will prevent it
+If client is not logged in and is trying to access the project data or send updates sever will prevent it
 responding with the following message:
 
 ```json
@@ -76,7 +76,7 @@ Response will contain list of project ids client is authorized to access:
 
 ### Load project
 
-To start working with a project client should set a `dataset` command specifying id of the project:
+To start working with a project client should send a `dataset` command specifying id of the project:
 
 ```json
 { "command": "dataset", "project": 1 }
