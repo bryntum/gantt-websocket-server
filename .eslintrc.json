@@ -1,0 +1,24 @@
+{
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "script"
+  },
+  "extends": ["eslint:recommended"],
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "rules": {
+    "no-console": "off",
+    "brace-style": ["error", "stroustrup"]
+  },
+  "overrides": [
+    {
+      "files": ["tests/**"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

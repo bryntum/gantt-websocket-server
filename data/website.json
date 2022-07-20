@@ -1,0 +1,106 @@
+{
+    "success"      : true,
+    "project"      : {
+        "startDate"    : "2019-01-14",
+        "hoursPerDay"  : 24,
+        "daysPerWeek"  : 5,
+        "daysPerMonth" : 20
+    },
+    "calendars"    : {
+        "rows" : []
+    },
+    "tasks"        : {
+        "rows" : [
+            {
+                "id" : 1,
+                "name": "Launch website",
+                "expanded": true
+            },
+            {
+                "id": 11,
+                "parentId": 1,
+                "name": "Create design",
+                "duration": 3
+            },
+            {
+                "id": 12,
+                "parentId": 1,
+                "name": "Create markup",
+                "duration": 5
+            },
+            {
+                "id": 13,
+                "parentId": 1,
+                "name": "Create SSL Certificate",
+                "duration": 1
+            },
+            {
+                "id": 14,
+                "parentId": 1,
+                "name": "Deploy to staging",
+                "duration": 1
+            },
+            {
+                "id": 15,
+                "parentId": 1,
+                "name": "Test staging",
+                "duration": 5
+            },
+            {
+                "id": 16,
+                "parentId": 1,
+                "name": "Deploy to production",
+                "duration": 1
+            },
+            {
+                "id": 17,
+                "parentId": 1,
+                "name": "Test production",
+                "duration": 5
+            }
+        ]
+    },
+    "dependencies" : {
+        "rows" : [
+            {
+                "id": 1,
+                "from": 11,
+                "to": 12
+            },
+            {
+                "id": 2,
+                "from": 12,
+                "to": 14
+            },
+            {
+                "id": 3,
+                "from": 13,
+                "to": 14
+            },
+            {
+                "id": 4,
+                "from": 14,
+                "to": 15
+            },
+            {
+                "id": 5,
+                "from": 15,
+                "to": 16
+            },
+            {
+                "id": 6,
+                "from": 16,
+                "to": 17
+            }
+        ]
+    },
+    "resources"    : {
+        "rows" : []
+    },
+    "assignments"  : {
+        "rows" : []
+    },
+    "timeRanges"   : {
+        "rows" : []
+    }
+}

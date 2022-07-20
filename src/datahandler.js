@@ -1,18 +1,25 @@
 const { Storage } = require('./storage.js');
 
 class DataHandler {
-    storage = new Storage()
-
-    get dataset() {
-        return this.storage.dataset;
-    }
-    
-    get project() {
-        return this.storage.project;
-    }
-
-    reset() {
+    constructor() {
         this.storage = new Storage();
+    }
+
+    getProjectData(id) {
+        return this.storage.getProjectData(id);
+    }
+
+    getProjectsMetadata(ids) {
+        return this.storage.getProjectsMetadata(ids);
+    }
+
+    reset(id) {
+        if (id != null) {
+            this.storage.reset(id);
+        }
+        else {
+            this.storage = new Storage();
+        }
     }
 
     replacePhantomId(record, PHANTOMID_ID_MAP) {
@@ -25,12 +32,14 @@ class DataHandler {
         }
     }
 
-    handleProjectChanges(changes) {
+    handleProjectChanges(projectId, changes) {
         const ID_PHANTOMID_MAP = new Map();
         const PHANTOMID_ID_MAP = new Map();
 
+        const project = this.storage.getProject(projectId);
+
         for (const key in changes) {
-            this.handleStoreChanges(this.storage[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
+            this.handleStoreChanges(project.data[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
         }
 
         // Changes object already contains correct ids
