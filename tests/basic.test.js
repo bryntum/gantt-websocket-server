@@ -188,3 +188,35 @@ test('Should get dataset from server', async () => {
 
     ws.terminate();
 });
+
+test('Should receive OK to autosave once', async () => {
+    const ws = new WebSocket(server.address);
+    const ws1 = new WebSocket(server.address);
+    const ws2 = new WebSocket(server.address);
+
+    await waitForConnectionOpen(ws);
+    await waitForConnectionOpen(ws1);
+    await waitForConnectionOpen(ws2);
+
+    await Promise.all([
+        awaitDataset(ws, 1),
+        awaitDataset(ws1, 1),
+        awaitDataset(ws2, 1)
+    ]);
+
+    ws.send('{ "command": "requestVersionAutoSave", "project": 1 }');
+    ws1.send('{ "command": "requestVersionAutoSave", "project": 1 }');
+    ws2.send('{ "command": "requestVersionAutoSave", "project": 1 }');
+
+    const [response1, response2, response3] = await Promise.allSettled([
+        awaitNextMessage(ws),
+        awaitNextMessage(ws1),
+        awaitNextMessage(ws2)
+    ]);
+
+    expect(response1.value).toEqual({ command: 'versionAutoSaveOK', project: 1 });
+    expect(response2.value).toEqual(undefined);
+    expect(response3.value).toEqual(undefined);
+
+    [ws, ws1, ws2].forEach(ws => ws.terminate());
+});
