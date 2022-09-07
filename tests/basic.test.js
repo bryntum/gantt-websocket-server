@@ -181,21 +181,9 @@ test('Should get dataset from server', async () => {
         versionsData     : expect.arrayContaining([expect.objectContaining({
             id         : expect.any(String),
             name       : expect.any(String),
-            content    : expect.any(String),
-            savedAt    : expect.any(Date),
-            isAutosave : expect.anything()
+            content    : expect.any(String)
         })]),
-        changelogData    : expect.arrayContaining([expect.objectContaining({
-            id           : expect.any(String),
-            versionId    : expect.any(String),
-            changes      : expect.arrayContaining([expect.objectContaining({
-                property : expect.any(String),
-                before   : expect.anything(),
-                after    : expect.anything()
-            })]),
-            occurredAt   : expect.any(Date),
-            name         : expect.any(String)
-        })])
+        changelogData    : expect.any(Array)
     });
 
     ws.terminate();
