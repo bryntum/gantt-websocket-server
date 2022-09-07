@@ -2,7 +2,8 @@ const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
 const { awaitNextCommand, awaitAuth } = require('./util.js');
 
-const server = new WebSocketServer({ port : 8084 });
+// address 8084 is in use in github actions?
+const server = new WebSocketServer({ port : 8087 });
 
 beforeAll(() => server.init());
 
