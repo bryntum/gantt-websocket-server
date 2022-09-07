@@ -177,6 +177,24 @@ test('Should get dataset from server', async () => {
         calendarsData    : expect.arrayContaining([expect.objectContaining({
             id        : expect.any(String),
             intervals : expect.anything()
+        })]),
+        versionsData     : expect.arrayContaining([expect.objectContaining({
+            id         : expect.any(String),
+            name       : expect.any(String),
+            content    : expect.any(String),
+            savedAt    : expect.any(Date),
+            isAutosave : expect.anything()
+        })]),
+        changelogData    : expect.arrayContaining([expect.objectContaining({
+            id           : expect.any(String),
+            versionId    : expect.any(String),
+            changes      : expect.arrayContaining([expect.objectContaining({
+                property : expect.any(String),
+                before   : expect.anything(),
+                after    : expect.anything()
+            })]),
+            occurredAt   : expect.any(Date),
+            name         : expect.any(String)
         })])
     });
 

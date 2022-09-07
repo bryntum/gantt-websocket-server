@@ -18,7 +18,7 @@ const
     debug               = args.debug,
     port                = args.port || 8080;
 
-const server = new WebSocketServer({ debug, resetDelay });
+const server = new WebSocketServer({ debug, resetDelay, port });
 
 server.init(port).then(() => {
     server.showWebSocketServerAddress();

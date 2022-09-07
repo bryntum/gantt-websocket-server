@@ -76,7 +76,7 @@ class Storage {
         const projects = this.projects = [
             { id : 1, name : 'SaaS', source : 'data/saas.json'},
             { id : 2, name : 'Website', source : 'data/website.json'},
-            { id : 3, name : 'Backend', source : 'data/backend.json'},
+            { id : 3, name : 'Backend', source : 'data/backend.json'}
         ];
 
         this.counter = 100;
@@ -93,6 +93,8 @@ class Storage {
             dependencies : new Store(data.dependencies.rows),
             assignments  : new Store(data.assignments.rows),
             calendars    : new Store(data.calendars.rows),
+            versions     : new Store(data.versions.rows),
+            changelog    : new Store([]),
             projectMeta  : data.project
         };
     }
@@ -125,6 +127,8 @@ class Storage {
                 dependencies,
                 assignments,
                 calendars,
+                versions,
+                changelog,
                 projectMeta
             } = project.data;
 
@@ -134,6 +138,8 @@ class Storage {
             dependenciesData : dependencies.dataset,
             assignmentsData  : assignments.dataset,
             calendarsData    : calendars.dataset,
+            versionsData     : versions.dataset,
+            changelogData    : changelog.dataset,
             project          : projectMeta
         };
     }

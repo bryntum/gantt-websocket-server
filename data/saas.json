@@ -1327,5 +1327,8 @@
                 "cls"          : "b-fa b-fa-diamond"
             }
         ]
+    },
+    "versions"     : {
+        "rows" : []
     }
 }

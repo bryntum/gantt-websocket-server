@@ -102,5 +102,8 @@
     },
     "timeRanges"   : {
         "rows" : []
+    },
+    "versions"     : {
+        "rows" : []
     }
 }
