@@ -194,10 +194,6 @@ test('Should receive OK to autosave once', async () => {
     const ws1 = new WebSocket(server.address);
     const ws2 = new WebSocket(server.address);
 
-    await waitForConnectionOpen(ws);
-    await waitForConnectionOpen(ws1);
-    await waitForConnectionOpen(ws2);
-
     await Promise.all([
         awaitDataset(ws, 1),
         awaitDataset(ws1, 1),
