@@ -56,6 +56,12 @@ test('Should generate ids for new records', async () => {
             },
             assignments  : {
                 added : [{ $PhantomId : 'newrec4' }]
+            },
+            versions     : {
+                added : [{ $PhantomId : 'newrec5' }]
+            },
+            changelog    : {
+                added : [{ $PhantomId : 'newrec6' }]
             }
         }
     };
@@ -75,6 +81,12 @@ test('Should generate ids for new records', async () => {
             },
             assignments : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
+            },
+            versions  : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
+            },
+            changelog : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
             }
         }
     });
@@ -112,6 +124,12 @@ test('Should broadcast ids for new records among clients', async () => {
             },
             assignments  : {
                 added : [{ $PhantomId : 'newrec4' }]
+            },
+            versions     : {
+                added : [{ $PhantomId : 'newrec5' }]
+            },
+            changelog    : {
+                added : [{ $PhantomId : 'newrec6' }]
             }
         }
     };
@@ -131,6 +149,12 @@ test('Should broadcast ids for new records among clients', async () => {
             },
             assignments  : {
                 added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
+            },
+            versions  : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
+            },
+            changelog : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
             }
         }
     });
