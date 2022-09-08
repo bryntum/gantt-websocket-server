@@ -94,7 +94,7 @@ class Storage {
             assignments  : new Store(data.assignments.rows),
             calendars    : new Store(data.calendars.rows),
             versions     : new Store(data.versions.rows),
-            changelog    : new Store([]),
+            changelogs   : new Store([]),
             projectMeta  : data.project
         };
     }
@@ -128,7 +128,7 @@ class Storage {
                 assignments,
                 calendars,
                 versions,
-                changelog,
+                changelogs,
                 projectMeta
             } = project.data;
 
@@ -139,7 +139,7 @@ class Storage {
             assignmentsData  : assignments.dataset,
             calendarsData    : calendars.dataset,
             versionsData     : versions.dataset,
-            changelogData    : changelog.dataset,
+            changelogsData   : changelogs.dataset,
             project          : projectMeta
         };
     }
