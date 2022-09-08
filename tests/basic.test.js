@@ -200,14 +200,10 @@ test('Should receive OK to autosave once', async () => {
         awaitDataset(ws2, 1)
     ]);
 
-    ws.send('{ "command": "requestVersionAutoSave", "project": 1 }');
-    ws1.send('{ "command": "requestVersionAutoSave", "project": 1 }');
-    ws2.send('{ "command": "requestVersionAutoSave", "project": 1 }');
-
     const [response1, response2, response3] = await Promise.allSettled([
-        awaitNextMessage(ws),
-        awaitNextMessage(ws1),
-        awaitNextMessage(ws2)
+        awaitNextMessage(ws, { "command": "requestVersionAutoSave", "project": 1 }),
+        awaitNextMessage(ws1, { "command": "requestVersionAutoSave", "project": 1 }),
+        awaitNextMessage(ws2, { "command": "requestVersionAutoSave", "project": 1 })
     ]);
 
     expect(response1.value).toEqual({ command: 'versionAutoSaveOK', project: 1 });
