@@ -208,6 +208,70 @@ test('Should respond to client if assignment was added', async () => {
     ws.terminate();
 });
 
+test('Should respond to client if version was added', async () => {
+    const ws = new WebSocket(server.address);
+
+    await awaitDataset(ws, 1);
+
+    const request = {
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            versions : {
+                added : [{ $PhantomId : 'newrec1' }]
+            }
+        }
+    };
+
+    const expected = expect.objectContaining({
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            versions : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+            }
+        }
+    });
+
+    const response = await awaitNextCommand(ws, 'projectChange', request);
+
+    expect(response).toEqual(expected);
+
+    ws.terminate();
+});
+
+test('Should respond to client if changelog was added', async () => {
+    const ws = new WebSocket(server.address);
+
+    await awaitDataset(ws, 1);
+
+    const request = {
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            changelogs : {
+                added : [{ $PhantomId : 'newrec1' }]
+            }
+        }
+    };
+
+    const expected = expect.objectContaining({
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            changelogs : {
+                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+            }
+        }
+    });
+
+    const response = await awaitNextCommand(ws, 'projectChange', request);
+
+    expect(response).toEqual(expected);
+
+    ws.terminate();
+});
+
 test('Should not send response to the sender if no records were added', async () => {
     const ws = new WebSocket(server.address);
     const ws1 = new WebSocket(server.address);
