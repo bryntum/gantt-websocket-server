@@ -210,6 +210,7 @@ class MessageHandler extends AuthorizationHandler {
             { project } = data,
             now = new Date(),
             lastAutoSaveOK = me.lastAutoSaveOK.get(project);
+
         if (!lastAutoSaveOK || (now - lastAutoSaveOK > me.minAutoSaveInterval)) {
             ws.send(JSON.stringify({
                 command : 'versionAutoSaveOK',
