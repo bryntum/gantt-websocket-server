@@ -1,12 +1,19 @@
 const fs = require('fs');
 
+const LazyStrategy = {
+    NONE: 'NONE',
+    ALL: 'ALL'
+};
+
 class Store {
-    constructor(data = []) {
+    constructor(data = [], lazyFields = []) {
         this.data = data;
+        this.lazyFields = lazyFields;
     }
 
-    getById(id) {
-        return this.data.find(r => r.id === id);
+    getById(id, lazyStrategy = LazyStrategy.NONE) {
+        const record = this.data.find(r => r.id === id);
+        return lazyStrategy === LazyStrategy.ALL ? record : this.omitLazyFields(record);
     }
 
     add(records) {
@@ -34,7 +41,18 @@ class Store {
     }
 
     get dataset() {
-        return this.data.slice();
+        return this.data.map(record => this.omitLazyFields(record));
+    }
+
+    omitLazyFields(record) {
+        if (!record || this.lazyFields.length === 0) {
+            return record;
+        }
+        const clonedRecord = Object.assign({}, record);
+        for (const lazyField of this.lazyFields) {
+            delete clonedRecord[lazyField];
+        }
+        return clonedRecord;
     }
 }
 
@@ -93,8 +111,7 @@ class Storage {
             dependencies    : new Store(data.dependencies.rows),
             assignments     : new Store(data.assignments.rows),
             calendars       : new Store(data.calendars.rows),
-            versions        : new Store(data.versions.rows),
-            versionContents : new Store([]),
+            versions        : new Store(data.versions.rows, ['content']),
             changelogs      : new Store([]),
             projectMeta     : data.project
         };
@@ -156,4 +173,4 @@ class Storage {
     }
 }
 
-module.exports = { Storage };
+module.exports = { Storage, LazyStrategy };

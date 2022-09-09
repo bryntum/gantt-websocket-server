@@ -1,4 +1,4 @@
-const { Storage } = require('./storage.js');
+const { Storage, LazyStrategy } = require('./storage.js');
 
 class DataHandler {
     constructor() {
@@ -47,7 +47,10 @@ class DataHandler {
     }
 
     handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
-        changes.added?.forEach(record => {
+        const { added, updated, removed } = changes;
+
+        for (let index = 0; index < added?.length; index++) {
+            const record = added[index];
             // For every new record we should generate an id
             record.id = this.storage.generateId(store.storeId);
 
@@ -62,47 +65,39 @@ class DataHandler {
             // delete record.$PhantomParentId;
 
             store.add(record);
-        });
 
-        changes.updated?.forEach(record => {
-            const localRecord = store.getById(record.id);
+            // Replace with version from store, to drop lazy-loaded fields for rebroadcast
+            added[index] = store.getById(record.id);
+        }
+
+        for (let index = 0; index < updated?.length; index++) {
+            const record = updated[index];
+            const localRecord = store.getById(record.id, LazyStrategy.ALL);
 
             if (localRecord) {
                 this.replacePhantomId(record, PHANTOMID_ID_MAP);
 
                 // Copy properties
                 Object.assign(localRecord, record);
+
+                // Replace with version from store, to drop lazy-loaded fields for rebroadcast
+                updated[index] = store.getById(record.id);
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
                 // It should not be happening
                 console.warn('Record not found in store ' + store.storeId);
             }
-        });
+        }
 
-        if ('removed' in changes) {
-            store.remove(changes.removed.map(r => r.id));
+        if (removed) {
+            store.remove(removed.map(r => r.id));
         }
     }
 
     getVersionContent(projectId, versionId) {
-        const { versions, versionContents } = this.storage.getProject(projectId).data;
-        let content = versionContents.getById(versionId)?.content;
-        if (!content) {
-            const version = versions.dataset.find(({ id }) => id === versionId);
-            if (version) {
-                const contentRec = versionContents.getById(version.$PhantomId);
-                contentRec.id = versionId;
-                content = contentRec.content;
-            }
-        }
-        return content;
-    }
-
-    setVersionContent(projectId, versionId, content) {
-        const { versionContents } = this.storage.getProject(projectId).data;
-        versionContents.remove(versionId);
-        versionContents.add({ id: versionId, content });
+        const { versions } = this.storage.getProject(projectId).data;
+        return versions.getById(versionId, LazyStrategy.ALL)?.content;
     }
 }
 

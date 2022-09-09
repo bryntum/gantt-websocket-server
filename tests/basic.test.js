@@ -5,6 +5,7 @@ const { waitForConnectionOpen, awaitNextMessage, awaitAuth, awaitNextCommand, aw
 const server = new WebSocketServer({ port : 8081 });
 
 beforeAll(() => server.init());
+beforeEach(async () => await server.resetDataSet());
 
 afterAll(() => server.destroy());
 
@@ -204,8 +205,7 @@ test('Should get dataset from server', async () => {
         })]),
         versionsData     : expect.arrayContaining([expect.objectContaining({
             id         : expect.any(String),
-            name       : expect.any(String),
-            content    : expect.any(String)
+            name       : expect.any(String)
         })]),
         changelogsData   : expect.any(Array)
     });
@@ -239,7 +239,6 @@ test('Should receive OK to autosave once', async () => {
 
 test('New clients should receive existing versions', async () => {
     const ws = new WebSocket(server.address);
-    await server.resetDataSet();
 
     await awaitDataset(ws, 1);
     await awaitNextCommand(ws, 'projectChange', {
@@ -315,25 +314,73 @@ test('Should save and retrieve version content', async () => {
 
     await awaitDataset(ws, 1);
 
-    ws.send(JSON.stringify({
-        command: 'saveVersionContent', 
-        project: 1,
-        versionId: 58,
-        content: versionContent
-    }));
-
-    const response = await awaitNextCommand(ws, 'loadVersionContent', {
-        command: 'loadVersionContent', 
-        project: 1,
-        versionId: 58
+    const putResponse = await awaitNextCommand(ws, 'projectChange', {
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            versions     : {
+                added : [{
+                    $PhantomId : 'newrec1',
+                    name       : 'Version 1',
+                    savedAt    : '2022-09-08T14:09:29.180Z',
+                    content    : versionContent 
+                }]
+            }
+        }
     });
 
-    expect(response).toEqual({
+    // Lazy-loaded content field not returned in response
+    expect(putResponse.changes.versions.added[0].content).toBeUndefined();
+    const versionId = putResponse.changes.versions.added[0].id;
+
+    const loadResponse = await awaitNextCommand(ws, 'loadVersionContent', {
+        command: 'loadVersionContent', 
+        project: 1,
+        versionId
+    });
+
+    expect(loadResponse).toEqual({
         command: 'loadVersionContent',
         project: 1,
-        versionId: 58,
+        versionId,
         content: versionContent
     });
 
     ws.terminate();
+});
+
+
+test('Should not send version content by default on dataset command', async () => {
+    const versionContent = {
+        tasks: [{ id: 37 }],
+        resources: [{ id: 44 }]
+    };
+
+    const ws = new WebSocket(server.address);
+
+    await awaitDataset(ws, 1);
+
+    await awaitNextCommand(ws, 'projectChange', {
+        command : 'projectChange',
+        project : 1,
+        changes : {
+            versions     : {
+                added : [{
+                    $PhantomId : 'newrec1',
+                    name       : 'Version 1',
+                    savedAt    : '2022-09-08T14:09:29.180Z',
+                    content    : versionContent 
+                }]
+            }
+        }
+    });
+
+    const ws2 = new WebSocket(server.address);
+
+    const client2Dataset = await awaitDataset(ws2, 1);
+
+    // New client shouldn't get version content
+    client2Dataset.dataset.versionsData.forEach(version => {
+        expect(version.content).toBeUndefined();
+    });
 });
