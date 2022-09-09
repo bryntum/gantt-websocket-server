@@ -304,3 +304,36 @@ test('New clients should receive existing changelogs', async () => {
 
     [ws, ws1].forEach(ws => ws.terminate());
 });
+
+test('Should save and retrieve version content', async () => {
+    const versionContent = {
+        tasks: [{ id: 37 }],
+        resources: [{ id: 44 }]
+    };
+
+    const ws = new WebSocket(server.address);
+
+    await awaitDataset(ws, 1);
+
+    ws.send({
+        command: 'saveVersionContent', 
+        project: 1,
+        versionId: 58,
+        content: versionContent
+    });
+
+    const response = await awaitNextMessage(ws, {
+        command: 'loadVersionContent', 
+        project: 1,
+        versionId: 58
+    });
+
+    expect(response.value).toEqual({
+        command: 'loadVersionContent',
+        project: 1,
+        versionId: 58,
+        content: versionContent
+    });
+
+    ws.terminate();
+});

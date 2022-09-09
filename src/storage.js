@@ -88,14 +88,15 @@ class Storage {
         const data = JSON.parse(fs.readFileSync(project.source));
 
         project.data = {
-            tasks        : new TreeStore(data.tasks.rows),
-            resources    : new Store(data.resources.rows),
-            dependencies : new Store(data.dependencies.rows),
-            assignments  : new Store(data.assignments.rows),
-            calendars    : new Store(data.calendars.rows),
-            versions     : new Store(data.versions.rows),
-            changelogs   : new Store([]),
-            projectMeta  : data.project
+            tasks           : new TreeStore(data.tasks.rows),
+            resources       : new Store(data.resources.rows),
+            dependencies    : new Store(data.dependencies.rows),
+            assignments     : new Store(data.assignments.rows),
+            calendars       : new Store(data.calendars.rows),
+            versions        : new Store(data.versions.rows),
+            versionContents : new Store([]),
+            changelogs      : new Store([]),
+            projectMeta     : data.project
         };
     }
 

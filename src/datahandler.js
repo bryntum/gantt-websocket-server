@@ -84,6 +84,26 @@ class DataHandler {
             store.remove(changes.removed.map(r => r.id));
         }
     }
+
+    getVersionContent(projectId, versionId) {
+        const { versions, versionContents } = this.storage.getProject(projectId).data;
+        let content = versionContents.getById(versionId)?.content;
+        if (!content) {
+            const version = versions.dataset.find(({ id }) => id === versionId);
+            if (version) {
+                const contentRec = versionContents.getById(version.$PhantomId);
+                contentRec.id = versionId;
+                content = contentRec.content;
+            }
+        }
+        return content;
+    }
+
+    setVersionContent(projectId, versionId, content) {
+        const { versionContents } = this.storage.getProject(projectId).data;
+        versionContents.remove(versionId);
+        versionContents.add({ id: versionId, content });
+    }
 }
 
 module.exports = { DataHandler };
