@@ -223,17 +223,16 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleSaveVersionContent(ws, data) {
-        const
-            me = this,
-            { project, versionId, content } = data;
+        const { project, versionId, content } = data;
+
         this.dataHandler.setVersionContent(project, versionId, content);
     }
 
     handleLoadVersionContent(ws, data) {
         const
-            me = this,
-            { project, versionId } = data;
-        const content = this.dataHandler.getVersionContent(project, versionId);
+            { project, versionId } = data,
+            content = this.dataHandler.getVersionContent(project, versionId);
+
         ws.send(JSON.stringify({
             command : 'loadVersionContent',
             project,
