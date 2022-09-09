@@ -79,9 +79,6 @@ class DataHandler {
 
                 // Copy properties
                 Object.assign(localRecord, record);
-
-                // Replace with version from store, to drop lazy-loaded fields for rebroadcast
-                updated[index] = store.getById(record.id);
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
