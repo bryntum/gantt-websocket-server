@@ -315,20 +315,20 @@ test('Should save and retrieve version content', async () => {
 
     await awaitDataset(ws, 1);
 
-    ws.send({
+    ws.send(JSON.stringify({
         command: 'saveVersionContent', 
         project: 1,
         versionId: 58,
         content: versionContent
-    });
+    }));
 
-    const response = await awaitNextMessage(ws, {
+    const response = await awaitNextCommand(ws, 'loadVersionContent', {
         command: 'loadVersionContent', 
         project: 1,
         versionId: 58
     });
 
-    expect(response.value).toEqual({
+    expect(response).toEqual({
         command: 'loadVersionContent',
         project: 1,
         versionId: 58,
