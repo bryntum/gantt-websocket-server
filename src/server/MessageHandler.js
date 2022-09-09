@@ -223,9 +223,8 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleSaveVersionContent(ws, data) {
-        const
-            me = this,
-            { project, versionId, content } = data;
+        const { project, versionId, content } = data;
+
         this.dataHandler.setVersionContent(project, versionId, content);
     }
 
