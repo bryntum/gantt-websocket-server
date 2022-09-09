@@ -7,17 +7,20 @@ class MessageHandler extends AuthorizationHandler {
         super(config);
 
         this.handlersMap = {
-            'login'         : this.handleLogin.bind(this),
-            'logout'        : this.requireAuth(this.handleLogout),
-            'projects'      : this.requireAuth(this.handleProjects),
-            'reset'         : this.requireAuth(this.handleReset),
-            'dataset'       : this.requireAuth(this.handleDataset),
-            'projectChange' : this.requireAuth(this.handleProjectChange)
+            'login'                  : this.handleLogin.bind(this),
+            'logout'                 : this.requireAuth(this.handleLogout),
+            'projects'               : this.requireAuth(this.handleProjects),
+            'reset'                  : this.requireAuth(this.requireSubscription(this.handleReset)),
+            'dataset'                : this.requireAuth(this.handleDataset),
+            'projectChange'          : this.requireAuth(this.requireSubscription(this.handleProjectChange)),
+            'requestVersionAutoSave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave))
         }
 
         this.dataHandler = new DataHandler();
 
         this.projectSubscribersMap = {};
+        this.lastAutoSaveOK = new Map();
+        this.minAutoSaveInterval = Math.max(1, (config.autoSaveIntervalMins ?? 60) - 1) * 60 * 1000;
     }
 
     /**
@@ -155,13 +158,20 @@ class MessageHandler extends AuthorizationHandler {
         ws.send(JSON.stringify({ command : 'projects', projects : this.dataHandler.getProjectsMetadata(this.getUserProjects(ws.userName)) }));
     }
 
+    requireSubscription(fn) {
+        return (ws, data) => {
+            const { command, project } = data;
+            if (this.isClientSubscribedToProject(ws, project)) {
+                return fn.call(this, ws, data);
+            }
+            else {
+                ws.send(JSON.stringify({ command, project, error : 'Subscription to project is required. Load project first' }));
+            }
+        };
+    }
+
     handleReset(ws, { command, project }) {
-        if (this.isClientSubscribedToProject(ws, project)) {
-            this.resetDataSet(project, ws.userName);
-        }
-        else {
-            ws.send(JSON.stringify({ command, project, error : 'Subscription to project is required. Load project first' }));
-        }
+        this.resetDataSet(project, ws.userName);
     }
 
     handleDataset(ws, data) {
@@ -182,22 +192,34 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleProjectChange(ws, data) {
-        const { command, project } = data;
+        const
+            { command, project } = data,
+            { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(project, data.changes);
 
-        if (this.isClientSubscribedToProject(ws, project)) {
-            const { changes, hasNewRecords } = this.dataHandler.handleProjectChanges(project, data.changes);
-
-            if (hasNewRecords) {
-                this.broadcastProjectChanges(null, { command, project, changes });
-            }
-            else {
-                this.broadcastProjectChanges(ws, { command, project, changes });
-            }
+        if (hasNewRecords) {
+            this.broadcastProjectChanges(null, { command, project, changes });
         }
         else {
-            ws.send(JSON.stringify({ command, project, error : 'Subscription to project is required. Load project first' }));
+            this.broadcastProjectChanges(ws, { command, project, changes });
         }
     }
+
+    handleRequestVersionAutoSave(ws, data) {
+        const
+            me = this,
+            { project } = data,
+            now = new Date(),
+            lastAutoSaveOK = me.lastAutoSaveOK.get(project);
+
+        if (!lastAutoSaveOK || (now - lastAutoSaveOK > me.minAutoSaveInterval)) {
+            ws.send(JSON.stringify({
+                command : 'versionAutoSaveOK',
+                project
+            }));
+            me.lastAutoSaveOK.set(project, now);
+        }
+    }   
+
     //#endregion
 
     // When client requests dataset we subscribe him to that project updates

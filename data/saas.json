@@ -1327,5 +1327,16 @@
                 "cls"          : "b-fa b-fa-diamond"
             }
         ]
+    },
+    "versions"     : {
+        "rows" : [
+            {
+                "id"         : "version-1",
+                "name"       : "Version 1",
+                "savedAt"    : "2019-03-20",
+                "isAutosave" : false,
+                "content"    : "{}"
+            }
+        ]
     }
 }
