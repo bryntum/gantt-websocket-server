@@ -11,7 +11,7 @@ class Store {
         this.lazyFields = lazyFields;
     }
 
-    getById(id, lazyStrategy = LazyStrategy.NONE) {
+    getById(id, lazyStrategy = LazyStrategy.ALL) {
         const record = this.data.find(r => r.id === id);
         return lazyStrategy === LazyStrategy.ALL ? record : this.omitLazyFields(record);
     }

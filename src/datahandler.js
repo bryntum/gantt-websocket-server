@@ -66,8 +66,8 @@ class DataHandler {
 
             store.add(record);
 
-            // Replace with version from store, to drop lazy-loaded fields for rebroadcast
-            added[index] = store.getById(record.id);
+            // Replace with version with lazy-loaded fields omitted for rebroadcast
+            added[index] = store.getById(record.id, LazyStrategy.NONE);
         }
 
         for (let index = 0; index < updated?.length; index++) {
@@ -94,7 +94,7 @@ class DataHandler {
 
     getVersionContent(projectId, versionId) {
         const { versions } = this.storage.getProject(projectId).data;
-        return versions.getById(versionId, LazyStrategy.ALL)?.content;
+        return versions.getById(versionId)?.content;
     }
 }
 
