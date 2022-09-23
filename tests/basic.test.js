@@ -5,7 +5,7 @@ const { waitForConnectionOpen, awaitNextMessage, awaitAuth, awaitNextCommand, aw
 const server = new WebSocketServer({ port : 8081 });
 
 beforeAll(() => server.init());
-beforeEach(async () => await server.resetDataSet());
+beforeEach(() => server.resetDataSet());
 
 afterAll(() => server.destroy());
 
