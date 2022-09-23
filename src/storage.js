@@ -1,19 +1,13 @@
 const fs = require('fs');
 
-const LazyStrategy = {
-    NONE: 'NONE',
-    ALL: 'ALL'
-};
-
 class Store {
     constructor(data = [], lazyFields = []) {
         this.data = data;
         this.lazyFields = lazyFields;
     }
 
-    getById(id, lazyStrategy = LazyStrategy.ALL) {
-        const record = this.data.find(r => r.id === id);
-        return lazyStrategy === LazyStrategy.ALL ? record : this.omitLazyFields(record);
+    getById(id) {
+        return this.data.find(r => r.id === id);
     }
 
     add(records) {
@@ -173,4 +167,4 @@ class Storage {
     }
 }
 
-module.exports = { Storage, LazyStrategy };
+module.exports = { Storage };

@@ -1,4 +1,4 @@
-const { Storage, LazyStrategy } = require('./storage.js');
+const { Storage } = require('./storage.js');
 
 class DataHandler {
     constructor() {
@@ -67,12 +67,12 @@ class DataHandler {
             store.add(record);
 
             // Replace with version with lazy-loaded fields omitted for rebroadcast
-            added[index] = store.getById(record.id, LazyStrategy.NONE);
+            added[index] = store.omitLazyFields(store.getById(record.id));
         }
 
         for (let index = 0; index < updated?.length; index++) {
             const record = updated[index];
-            const localRecord = store.getById(record.id, LazyStrategy.ALL);
+            const localRecord = store.getById(record.id);
 
             if (localRecord) {
                 this.replacePhantomId(record, PHANTOMID_ID_MAP);
