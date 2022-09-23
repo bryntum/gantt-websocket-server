@@ -47,7 +47,7 @@ class DataHandler {
     }
 
     handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
-        const { added, updated, removed } = changes;
+        const { added, updated = [], removed } = changes;
 
         for (let index = 0; index < added?.length; index++) {
             const record = added[index];
