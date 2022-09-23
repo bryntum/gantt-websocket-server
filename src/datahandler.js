@@ -47,7 +47,10 @@ class DataHandler {
     }
 
     handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
-        changes.added?.forEach(record => {
+        const { added, updated = [], removed } = changes;
+
+        for (let index = 0; index < added?.length; index++) {
+            const record = added[index];
             // For every new record we should generate an id
             record.id = this.storage.generateId(store.storeId);
 
@@ -62,9 +65,12 @@ class DataHandler {
             // delete record.$PhantomParentId;
 
             store.add(record);
-        });
 
-        changes.updated?.forEach(record => {
+            // Replace with version with lazy-loaded fields omitted for rebroadcast
+            added[index] = store.omitLazyFields(store.getById(record.id));
+        }
+
+        for (const record of updated) {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {
@@ -78,11 +84,16 @@ class DataHandler {
                 // It should not be happening
                 console.warn('Record not found in store ' + store.storeId);
             }
-        });
-
-        if ('removed' in changes) {
-            store.remove(changes.removed.map(r => r.id));
         }
+
+        if (removed) {
+            store.remove(removed.map(r => r.id));
+        }
+    }
+
+    getVersionContent(projectId, versionId) {
+        const { versions } = this.storage.getProject(projectId).data;
+        return versions.getById(versionId)?.content;
     }
 }
 
