@@ -47,7 +47,7 @@ class DataHandler {
     }
 
     handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
-        const { added, updated, removed } = changes;
+        const { added, updated = [], removed } = changes;
 
         for (let index = 0; index < added?.length; index++) {
             const record = added[index];
@@ -70,8 +70,7 @@ class DataHandler {
             added[index] = store.omitLazyFields(store.getById(record.id));
         }
 
-        for (let index = 0; index < updated?.length; index++) {
-            const record = updated[index];
+        for (const record of updated) {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {

@@ -5,7 +5,7 @@ const { waitForConnectionOpen, awaitNextMessage, awaitAuth, awaitNextCommand, aw
 const server = new WebSocketServer({ port : 8081 });
 
 beforeAll(() => server.init());
-beforeEach(async () => await server.resetDataSet());
+beforeEach(() => server.resetDataSet());
 
 afterAll(() => server.destroy());
 
@@ -383,4 +383,7 @@ test('Should not send version content by default on dataset command', async () =
     client2Dataset.dataset.versionsData.forEach(version => {
         expect(version.content).toBeUndefined();
     });
+    
+    ws.terminate();
+    ws2.terminate();
 });
