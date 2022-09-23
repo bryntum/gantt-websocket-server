@@ -70,8 +70,7 @@ class DataHandler {
             added[index] = store.getById(record.id, LazyStrategy.NONE);
         }
 
-        for (let index = 0; index < updated?.length; index++) {
-            const record = updated[index];
+        for (const record of updated) {
             const localRecord = store.getById(record.id, LazyStrategy.ALL);
 
             if (localRecord) {
