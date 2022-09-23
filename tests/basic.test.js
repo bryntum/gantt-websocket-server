@@ -383,4 +383,7 @@ test('Should not send version content by default on dataset command', async () =
     client2Dataset.dataset.versionsData.forEach(version => {
         expect(version.content).toBeUndefined();
     });
+    
+    ws.terminate();
+    ws2.terminate();
 });
