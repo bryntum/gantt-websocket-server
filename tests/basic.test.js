@@ -207,7 +207,11 @@ test('Should get dataset from server', async () => {
             name       : expect.any(String),
             content    : expect.any(String)
         })]),
-        changelogsData   : expect.any(Array)
+        changelogsData   : expect.any(Array),
+        project          : expect.objectContaining({
+            startDate : expect.any(String),
+            calendar  : expect.any(String)
+        })
     });
 
     ws.terminate();

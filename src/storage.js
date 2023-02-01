@@ -95,7 +95,7 @@ class Storage {
             calendars    : new Store(data.calendars.rows),
             versions     : new Store(data.versions.rows),
             changelogs   : new Store([]),
-            projectMeta  : data.project
+            project      : data.project
         };
     }
 
@@ -110,7 +110,7 @@ class Storage {
     }
 
     getProject(id) {
-        return this.projects.find(project => project.id == id);
+        return this.projects.find(project => project.id === id);
     }
 
     getProjectData(id) {
@@ -129,7 +129,7 @@ class Storage {
                 calendars,
                 versions,
                 changelogs,
-                projectMeta
+                project : projectMeta
             } = project.data;
 
         return {

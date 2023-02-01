@@ -170,7 +170,7 @@ class MessageHandler extends AuthorizationHandler {
         };
     }
 
-    handleReset(ws, { command, project }) {
+    handleReset(ws, { project }) {
         this.resetDataSet(project, ws.userName);
     }
 
@@ -179,12 +179,7 @@ class MessageHandler extends AuthorizationHandler {
 
         this.subscribeClientToProject(ws, project);
 
-        const dataset = this.dataHandler.getProjectData(project);
-
-        data.projectMeta = dataset.project;
-        delete dataset.project;
-
-        data.dataset = dataset;
+        data.dataset = this.dataHandler.getProjectData(project);
 
         ws.send(JSON.stringify(data));
 
