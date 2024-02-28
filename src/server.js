@@ -26,7 +26,8 @@ class WebSocketServer extends MessageHandler {
     get address() {
         const
             options = { internal : false, ipVersion : 4 },
-            ip      = ni.toIp(ni.getInterfaces(options)[0], options);
+            ifs     = ni.getInterfaces(options),
+            ip      = ni.toIp(ifs[ifs.length - 1], options);
 
         return `ws${this.httpsServer ? 's' : ''}://${ip}:${this.port}`;
     }

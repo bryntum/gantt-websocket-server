@@ -30,8 +30,8 @@ test('Unauthorized user should not be able to make changes to project', async ()
 
     await awaitAuth(ws, 'foo');
 
-    const got = await awaitNextCommand(ws, 'projectChange', {
-        command : 'projectChange',
+    const got = await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
         // user foo is not authorized to do this
         project : 3,
         changes : {
@@ -41,7 +41,7 @@ test('Unauthorized user should not be able to make changes to project', async ()
         }
     });
 
-    expect(got).toEqual({ command : 'projectChange', error : expect.any(String) });
+    expect(got).toEqual({ command : 'project_change', error : expect.any(String) });
 
     ws.terminate();
 });

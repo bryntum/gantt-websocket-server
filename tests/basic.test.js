@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
 const { waitForConnectionOpen, awaitNextMessage, awaitAuth, awaitNextCommand, awaitDataset } = require('./util.js');
@@ -42,56 +44,72 @@ test('Should generate ids for new records', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
-        project : 1,
-        changes : {
-            tasks        : {
-                added : [{ $PhantomId : 'newrec1' }]
-            },
-            resources    : {
-                added : [{ $PhantomId : 'newrec2' }]
-            },
-            dependencies : {
-                added : [{ $PhantomId : 'newrec3' }]
-            },
-            assignments  : {
-                added : [{ $PhantomId : 'newrec4' }]
-            },
-            versions     : {
-                added : [{ $PhantomId : 'newrec5' }]
-            },
-            changelogs   : {
-                added : [{ $PhantomId : 'newrec6' }]
-            }
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        },
+                        resources    : {
+                            added : [{ $PhantomId : 'newrec2' }]
+                        },
+                        dependencies : {
+                            added : [{ $PhantomId : 'newrec3' }]
+                        },
+                        assignments  : {
+                            added : [{ $PhantomId : 'newrec4' }]
+                        },
+                        versions     : {
+                            added : [{ $PhantomId : 'newrec5' }]
+                        },
+                        changelogs   : {
+                            added : [{ $PhantomId : 'newrec6' }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
-        command  : 'projectChange',
-        project  : 1,
-        changes  : {
-            tasks : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            },
-            resources : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(Number) })]
-            },
-            dependencies : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(Number) })]
-            },
-            assignments : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
-            },
-            versions : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
-            },
-            changelogs : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
-            }
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : 'server-1',
+                    localRevision : 'local-1',
+                    client        : 'client-1',
+                    changes       : {
+                        tasks        : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        },
+                        resources    : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(Number) })]
+                        },
+                        dependencies : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(Number) })]
+                        },
+                        assignments  : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
+                        },
+                        versions     : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
+                        },
+                        changelogs   : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
-    const got = await awaitNextCommand(ws, 'projectChange', request);
+    const got = await awaitNextCommand(ws, 'project_change', request);
 
     expect(got).toEqual(expected);
 
@@ -110,7 +128,7 @@ test('Should broadcast ids for new records among clients', async () => {
     ]);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks        : {
@@ -135,7 +153,7 @@ test('Should broadcast ids for new records among clients', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks        : {
@@ -203,9 +221,9 @@ test('Should get dataset from server', async () => {
             intervals : expect.anything()
         })]),
         versionsData     : expect.arrayContaining([expect.objectContaining({
-            id         : expect.any(String),
-            name       : expect.any(String),
-            content    : expect.any(String)
+            id      : expect.any(String),
+            name    : expect.any(String),
+            content : expect.any(String)
         })]),
         changelogsData   : expect.any(Array),
         project          : expect.objectContaining({
@@ -215,6 +233,10 @@ test('Should get dataset from server', async () => {
     });
 
     ws.terminate();
+});
+
+test('New clients should receive recorded changes', async () => {
+
 });
 
 test('Should receive OK to autosave once', async () => {
@@ -229,12 +251,12 @@ test('Should receive OK to autosave once', async () => {
     ]);
 
     const [response1, response2, response3] = await Promise.allSettled([
-        awaitNextMessage(ws, { "command": "requestVersionAutoSave", "project": 1 }),
-        awaitNextMessage(ws1, { "command": "requestVersionAutoSave", "project": 1 }),
-        awaitNextMessage(ws2, { "command": "requestVersionAutoSave", "project": 1 })
+        awaitNextMessage(ws, { "command" : "requestVersionAutoSave", "project" : 1 }),
+        awaitNextMessage(ws1, { "command" : "requestVersionAutoSave", "project" : 1 }),
+        awaitNextMessage(ws2, { "command" : "requestVersionAutoSave", "project" : 1 })
     ]);
 
-    expect(response1.value).toEqual({ command: 'versionAutoSaveOK', project: 1 });
+    expect(response1.value).toEqual({ command : 'versionAutoSaveOK', project : 1 });
     expect(response2.value).toEqual(undefined);
     expect(response3.value).toEqual(undefined);
 
@@ -246,9 +268,9 @@ test('New clients should receive existing versions', async () => {
     await server.resetDataSet();
 
     await awaitDataset(ws, 1);
-    await awaitNextCommand(ws, 'projectChange', {
-        command: 'projectChange',
-        project: 1,
+    await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
+        project : 1,
         changes : {
             versions : {
                 added : [{
@@ -266,9 +288,9 @@ test('New clients should receive existing versions', async () => {
 
     expect(dataset).toEqual(expect.objectContaining({
         versionsData : expect.arrayContaining([expect.objectContaining({
-            id       : expect.anything(),
-            savedAt  : expect.any(String),
-            name     : expect.any(String)
+            id      : expect.any(Number),
+            savedAt : expect.any(String),
+            name    : expect.any(String)
         })])
     }));
 
@@ -280,9 +302,9 @@ test('New clients should receive existing changelogs', async () => {
     await server.resetDataSet();
 
     await awaitDataset(ws, 1);
-    await awaitNextCommand(ws, 'projectChange', {
-        command: 'projectChange',
-        project: 1,
+    await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
+        project : 1,
         changes : {
             changelogs : {
                 added : [{
@@ -299,7 +321,7 @@ test('New clients should receive existing changelogs', async () => {
     const { dataset } = await awaitDataset(ws1, 1);
 
     expect(dataset).toEqual(expect.objectContaining({
-        changelogsData  : expect.arrayContaining([expect.objectContaining({
+        changelogsData : expect.arrayContaining([expect.objectContaining({
             id          : expect.anything(),
             occurredAt  : expect.any(String),
             description : expect.any(String)

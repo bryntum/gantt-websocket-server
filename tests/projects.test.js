@@ -36,11 +36,11 @@ test('User should not receive project change message if he has not loaded any pr
     });
 
     const [{ value : response1 }, { reason: response2 }] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'projectChange', { command : 'projectChange', project : 1, changes : { tasks : { added : [{ $PhantomId : '_generated1' }]} } }),
-        awaitNextCommand(ws2, 'projectChange')
+        awaitNextCommand(ws1, 'project_change', { command : 'project_change', project : 1, changes : { tasks : { added : [{ $PhantomId : '_generated1' }]} } }),
+        awaitNextCommand(ws2, 'project_change')
     ]);
 
-    expect(response1).toEqual(expect.objectContaining({ command : 'projectChange', changes : expect.any(Object) }));
+    expect(response1).toEqual(expect.objectContaining({ command : 'project_change', changes : expect.any(Object) }));
     expect(response2).toEqual('timeout');
 
     ws1.terminate();
@@ -52,9 +52,9 @@ test('User should not be able to make changes to project he has not loaded', asy
 
     await awaitAuth(ws);
 
-    const got = await awaitNextCommand(ws, 'projectChange', { command : 'projectChange', project : 1, changes : {}});
+    const got = await awaitNextCommand(ws, 'project_change', { command : 'project_change', project : 1, changes : {}});
 
-    expect(got).toEqual({ command : 'projectChange', project : 1, error : expect.stringMatching(/project/i) });
+    expect(got).toEqual({ command : 'project_change', project : 1, error : expect.stringMatching(/project/i) });
 
     ws.terminate();
 });

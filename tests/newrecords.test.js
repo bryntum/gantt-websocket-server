@@ -14,7 +14,7 @@ test('Should respond to client if task was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -33,7 +33,7 @@ test('Should respond to client if task was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -51,7 +51,7 @@ test('Should respond to client if task was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -64,7 +64,7 @@ test('Should respond to client if resource was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -83,7 +83,7 @@ test('Should respond to client if resource was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -101,7 +101,7 @@ test('Should respond to client if resource was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -114,7 +114,7 @@ test('Should respond to client if dependency was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -133,7 +133,7 @@ test('Should respond to client if dependency was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -151,7 +151,7 @@ test('Should respond to client if dependency was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -164,7 +164,7 @@ test('Should respond to client if assignment was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -183,7 +183,7 @@ test('Should respond to client if assignment was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -201,7 +201,7 @@ test('Should respond to client if assignment was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -214,7 +214,7 @@ test('Should respond to client if version was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             versions : {
@@ -224,7 +224,7 @@ test('Should respond to client if version was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             versions : {
@@ -233,7 +233,7 @@ test('Should respond to client if version was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -246,7 +246,7 @@ test('Should respond to client if changelog was added', async () => {
     await awaitDataset(ws, 1);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             changelogs : {
@@ -256,7 +256,7 @@ test('Should respond to client if changelog was added', async () => {
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             changelogs : {
@@ -265,7 +265,7 @@ test('Should respond to client if changelog was added', async () => {
         }
     });
 
-    const response = await awaitNextCommand(ws, 'projectChange', request);
+    const response = await awaitNextCommand(ws, 'project_change', request);
 
     expect(response).toEqual(expected);
 
@@ -282,7 +282,7 @@ test('Should not send response to the sender if no records were added', async ()
     ]);
 
     const request = {
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -301,7 +301,7 @@ test('Should not send response to the sender if no records were added', async ()
     };
 
     const expected = expect.objectContaining({
-        command : 'projectChange',
+        command : 'project_change',
         project : 1,
         changes : {
             tasks : {
@@ -320,8 +320,8 @@ test('Should not send response to the sender if no records were added', async ()
     });
 
     const [response1, response2] = await Promise.allSettled([
-        awaitNextCommand(ws, 'projectChange', request),
-        awaitNextCommand(ws1, 'projectChange')
+        awaitNextCommand(ws, 'project_change', request),
+        awaitNextCommand(ws1, 'project_change')
     ]);
 
     expect(response1.reason).toBe('timeout');

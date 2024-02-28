@@ -122,7 +122,7 @@ test('None of the commands should work if user is not logged', async () => {
         'projects',
         'reset',
         'dataset',
-        'projectChange'
+        'project_change'
     ]) {
         const got = await awaitNextMessage(ws, { command });
 

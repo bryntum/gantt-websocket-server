@@ -7,7 +7,7 @@ async function awaitTimeout(timeout = 100) {
 async function failAfter(timeout = 1000) {
     await awaitTimeout(timeout);
 
-    return Promise.reject('timeout');
+    return Promise.reject(`Request failed after timeout ${timeout}`);
 }
 
 /**
@@ -121,7 +121,7 @@ async function awaitAuth(client, login = 'admin', password = 'admin') {
 async function awaitDataset(client, project, login = 'admin', password = 'admin') {
     await awaitAuth(client, login, password);
 
-    return awaitNextCommand(client, 'dataset', { command : 'dataset', project });
+    return awaitNextCommand(client, 'dataset', { command : 'dataset', data : { project } });
 }
 
 module.exports = {

@@ -1,8 +1,22 @@
-const { Storage } = require('./storage.js');
+const { Storage } = require('./data/storage.js');
+
+const defaultConfig = {
+    projects : [
+        { id : 1, name : 'SaaS', source : 'data/saas.json'},
+        { id : 2, name : 'Website', source : 'data/website.json'},
+        { id : 3, name : 'Backend', source : 'data/backend.json'}
+    ]
+};
 
 class DataHandler {
     constructor() {
-        this.storage = new Storage();
+        this.storage = new Storage(defaultConfig);
+
+        this.load();
+    }
+
+    load() {
+        this.storage.load();
     }
 
     getProjectData(id) {
@@ -18,50 +32,57 @@ class DataHandler {
             this.storage.reset(id);
         }
         else {
-            this.storage = new Storage();
+            this.storage = new Storage(defaultConfig);
         }
     }
 
     replacePhantomId(record, PHANTOMID_ID_MAP) {
-        // Look for values that match keys in PHANTOMID_ID_MAP. If we found such value it means it is a link and we should
-        // replace phantom id with generated one
+        // Look for values that match keys in PHANTOMID_ID_MAP. If we found such value it means it is a link, and we
+        // should replace phantom id with generated one
         for (const key in record) {
-            if (!/\$Phantom/.test(key) && PHANTOMID_ID_MAP.has(record[key])) {
-                record[key] = PHANTOMID_ID_MAP.get(record[key]);
+            const value = record[key];
+
+            if (typeof value === 'string') {
+                if (!/\$Phantom/.test(key) && PHANTOMID_ID_MAP.has(value)) {
+                    record[key] = PHANTOMID_ID_MAP.get(value);
+                }
+            }
+            else if (typeof value === 'object' && !Array.isArray(value)) {
+                this.replacePhantomId(value, PHANTOMID_ID_MAP);
             }
         }
     }
 
-    handleProjectChanges(projectId, changes) {
-        const ID_PHANTOMID_MAP = new Map();
+    handleproject_changes(projectId, changes) {
         const PHANTOMID_ID_MAP = new Map();
 
         const project = this.storage.getProject(projectId);
 
         for (const key in changes) {
-            this.handleStoreChanges(project.data[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
+            this.handleStoreChanges(project.data[key], changes[key], PHANTOMID_ID_MAP);
         }
 
         // Changes object already contains correct ids
         return { changes, hasNewRecords : PHANTOMID_ID_MAP.size !== 0 };
     }
 
-    handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
+    // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
+    handleStoreChanges(store, changes, PHANTOMID_ID_MAP) {
         changes.added?.forEach(record => {
             // For every new record we should generate an id
             record.id = this.storage.generateId(store.storeId);
-
             PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
-            ID_PHANTOMID_MAP.set(record.id, record.$PhantomId);
+            // We need to keep record phantom id to assign correct id on a client which added a record
+
+            // Replace phantom parent id with parent id
+            if ('$PhantomParentId' in record) {
+                record.parentId = PHANTOMID_ID_MAP[record.$PhantomParentId];
+                // Phantom parent id is not required, on the other hand
+                delete record.$PhantomParentId;
+            }
 
             // Replace phantom ids with real ones
             this.replacePhantomId(record, PHANTOMID_ID_MAP);
-
-            // Remove extra field, we don't need it anymore
-            // delete record.$PhantomId;
-            // delete record.$PhantomParentId;
-
-            store.add(record);
         });
 
         changes.updated?.forEach(record => {
@@ -69,9 +90,6 @@ class DataHandler {
 
             if (localRecord) {
                 this.replacePhantomId(record, PHANTOMID_ID_MAP);
-
-                // Copy properties
-                Object.assign(localRecord, record);
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
@@ -80,9 +98,7 @@ class DataHandler {
             }
         });
 
-        if ('removed' in changes) {
-            store.remove(changes.removed.map(r => r.id));
-        }
+        store.applyChangeset(changes);
     }
 }
 

@@ -14,49 +14,44 @@
             {
                 "id" : 1,
                 "name": "Launch website",
-                "expanded": true
-            },
-            {
-                "id": 11,
-                "parentId": 1,
-                "name": "Create design",
-                "duration": 3
-            },
-            {
-                "id": 12,
-                "parentId": 1,
-                "name": "Create markup",
-                "duration": 5
-            },
-            {
-                "id": 13,
-                "parentId": 1,
-                "name": "Create SSL Certificate",
-                "duration": 1
-            },
-            {
-                "id": 14,
-                "parentId": 1,
-                "name": "Deploy to staging",
-                "duration": 1
-            },
-            {
-                "id": 15,
-                "parentId": 1,
-                "name": "Test staging",
-                "duration": 5
-            },
-            {
-                "id": 16,
-                "parentId": 1,
-                "name": "Deploy to production",
-                "duration": 1
-            },
-            {
-                "id": 17,
-                "parentId": 1,
-                "name": "Test production",
-                "duration": 5
+                "expanded": true,
+                "children": [
+                    {
+                        "id": 11,
+                        "name": "Create design",
+                        "duration": 3
+                    },
+                    {
+                        "id": 12,
+                        "name": "Create markup",
+                        "duration": 5
+                    },
+                    {
+                        "id": 13,
+                        "name": "Create SSL Certificate",
+                        "duration": 1
+                    },
+                    {
+                        "id": 14,
+                        "name": "Deploy to staging",
+                        "duration": 1
+                    },
+                    {
+                        "id": 15,
+                        "name": "Test staging",
+                        "duration": 5
+                    },
+                    {
+                        "id": 16,
+                        "name": "Deploy to production",
+                        "duration": 1
+                    },
+                    {
+                        "id": 17,
+                        "name": "Test production",
+                        "duration": 5
+                    }
+                ]
             }
         ]
     },
