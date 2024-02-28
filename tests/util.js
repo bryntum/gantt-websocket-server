@@ -18,7 +18,17 @@ async function failAfter(timeout = 1000) {
 async function waitForConnectionOpen(client) {
     await new Promise((resolve, reject) => {
         if (client.readyState === ws.CONNECTING) {
-            client.once('open', resolve);
+            client.once('open', () => {
+                if (!client.expectError) {
+                    client.on('message', data => {
+                        const message = JSON.parse(data);
+                        if (message.command === 'error') {
+                            throw new Error('Server error: ' + message.message);
+                        }
+                    })
+                }
+                resolve();
+            });
         }
         else if (client.readyState === ws.CLOSING || client.readyState === ws.CLOSED) {
             reject('Websocket is closed');
@@ -103,9 +113,11 @@ async function awaitAuth(client, login = 'admin', password = 'admin') {
     await waitForConnectionOpen(client);
 
     const [response] = await Promise.all([
-        awaitNextCommand(client, 'login', { command : 'login', login, password }),
+        awaitNextCommand(client, 'login', { command : 'login', data : { login, password } }),
         awaitNextCommand(client, 'users')
     ]);
+
+    client.clientId = response.data.client;
 
     return response;
 }

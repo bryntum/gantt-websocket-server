@@ -15,39 +15,55 @@ test('Should respond to client if task was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                added : [{ $PhantomId : 'newrec1' }]
-            },
-            resources : {
-                updated : [{ id : 1 }]
-            },
-            dependencies : {
-                updated : [{ id : 1 }]
-            },
-            assignments : {
-                updated : [{ id : 1 }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        },
+                        resources    : {
+                            updated : [{ id : 1 }]
+                        },
+                        dependencies : {
+                            updated : [{ id : 1 }]
+                        },
+                        assignments  : {
+                            updated : [{ id : 1 }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            },
-            resources : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            dependencies : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            assignments : {
-                updated : [expect.objectContaining({ id : 1 })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        },
+                        resources    : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        dependencies : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        assignments  : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -65,39 +81,55 @@ test('Should respond to client if resource was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [{ id : 1 }]
-            },
-            resources : {
-                added : [{ $PhantomId : 'newrec1' }]
-            },
-            dependencies : {
-                updated : [{ id : 1 }]
-            },
-            assignments : {
-                updated : [{ id : 1 }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            updated : [{ id : 1 }]
+                        },
+                        resources    : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        },
+                        dependencies : {
+                            updated : [{ id : 1 }]
+                        },
+                        assignments  : {
+                            updated : [{ id : 1 }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            resources : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            },
-            dependencies : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            assignments : {
-                updated : [expect.objectContaining({ id : 1 })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        resources    : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        },
+                        dependencies : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        assignments  : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -115,39 +147,55 @@ test('Should respond to client if dependency was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [{ id : 1 }]
-            },
-            resources : {
-                updated : [{ id : 1 }]
-            },
-            dependencies : {
-                added : [{ $PhantomId : 'newrec1' }]
-            },
-            assignments : {
-                updated : [{ id : 1 }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            updated : [{ id : 1 }]
+                        },
+                        resources    : {
+                            updated : [{ id : 1 }]
+                        },
+                        dependencies : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        },
+                        assignments  : {
+                            updated : [{ id : 1 }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            resources : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            dependencies : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            },
-            assignments : {
-                updated : [expect.objectContaining({ id : 1 })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        resources    : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        dependencies : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        },
+                        assignments  : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -165,39 +213,55 @@ test('Should respond to client if assignment was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [{ id : 1 }]
-            },
-            resources : {
-                updated : [{ id : 1 }]
-            },
-            dependencies : {
-                updated : [{ id : 1 }]
-            },
-            assignments : {
-                added : [{ $PhantomId : 'newrec1' }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            updated : [{ id : 1 }]
+                        },
+                        resources    : {
+                            updated : [{ id : 1 }]
+                        },
+                        dependencies : {
+                            updated : [{ id : 1 }]
+                        },
+                        assignments  : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            resources : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            dependencies : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            assignments : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        resources    : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        dependencies : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        assignments  : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -215,21 +279,37 @@ test('Should respond to client if version was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            versions : {
-                added : [{ $PhantomId : 'newrec1' }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        versions : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            versions : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        versions : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -247,21 +327,37 @@ test('Should respond to client if changelog was added', async () => {
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            changelogs : {
-                added : [{ $PhantomId : 'newrec1' }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        changelogs : {
+                            added : [{ $PhantomId : 'newrec1' }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            changelogs : {
-                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        changelogs : {
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -283,39 +379,55 @@ test('Should not send response to the sender if no records were added', async ()
 
     const request = {
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [{ id : 1 }]
-            },
-            resources : {
-                updated : [{ id : 1 }]
-            },
-            dependencies : {
-                updated : [{ id : 1 }]
-            },
-            assignments : {
-                updated : [{ id : 1 }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks        : {
+                            updated : [{ id : 1 }]
+                        },
+                        resources    : {
+                            updated : [{ id : 1 }]
+                        },
+                        dependencies : {
+                            updated : [{ id : 1 }]
+                        },
+                        assignments  : {
+                            updated : [{ id : 1 }]
+                        }
+                    }
+                }
+            ]
         }
     };
 
     const expected = expect.objectContaining({
         command : 'project_change',
-        project : 1,
-        changes : {
-            tasks : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            resources : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            dependencies : {
-                updated : [expect.objectContaining({ id : 1 })]
-            },
-            assignments : {
-                updated : [expect.objectContaining({ id : 1 })]
-            }
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        resources    : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        dependencies : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        },
+                        assignments  : {
+                            updated : [expect.objectContaining({ id : 1 })]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -324,7 +436,7 @@ test('Should not send response to the sender if no records were added', async ()
         awaitNextCommand(ws1, 'project_change')
     ]);
 
-    expect(response1.reason).toBe('timeout');
+    expect(response1.value).toEqual(expected);
     expect(response2.value).toEqual(expected);
 
     ws.terminate();

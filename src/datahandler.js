@@ -53,7 +53,7 @@ class DataHandler {
         }
     }
 
-    handleproject_changes(projectId, changes) {
+    handleProjectChanges(projectId, changes) {
         const PHANTOMID_ID_MAP = new Map();
 
         const project = this.storage.getProject(projectId);

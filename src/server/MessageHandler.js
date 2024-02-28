@@ -2,30 +2,30 @@ const WebSocket = require('ws');
 const { AuthorizationHandler } = require('./AuthorizationHandler.js');
 const { DataHandler } = require('../datahandler.js');
 
-let revisionId = 1;
-
-function getNextRevision() {
-    return `remote-${revisionId++}`
-}
 class MessageHandler extends AuthorizationHandler {
     constructor(config) {
         super(config);
 
         this.handlersMap = {
-            'login'                  : this.handleLogin.bind(this),
-            'logout'                 : this.requireAuth(this.handleLogout),
-            'projects'               : this.requireAuth(this.handleProjects),
-            'reset'                  : this.requireAuth(this.requireSubscription(this.handleReset)),
-            'dataset'                : this.requireAuth(this.handleDataset),
-            'project_change'         : this.requireAuth(this.requireSubscription(this.handleProjectChange)),
-            'requestVersionAutoSave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave))
+            'login'                    : this.handleLogin.bind(this),
+            'logout'                   : this.requireAuth(this.handleLogout),
+            'projects'                 : this.requireAuth(this.handleProjects),
+            'reset'                    : this.requireAuth(this.requireSubscription(this.handleReset)),
+            'dataset'                  : this.requireAuth(this.handleDataset),
+            'project_change'           : this.requireAuth(this.requireSubscription(this.handleProjectChange)),
+            'request_version_autosave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave))
         };
 
         this.dataHandler = new DataHandler();
 
         this.projectSubscribersMap = {};
+        this.projectRevisionsMap = {};
         this.lastAutoSaveOK = new Map();
         this.minAutoSaveInterval = Math.max(1, (config.autoSaveIntervalMins ?? 60) - 1) * 60 * 1000;
+    }
+
+    getNextRevision(project) {
+        return `server-${this.projectRevisionsMap[project].counter++}`;
     }
 
     /**
@@ -70,12 +70,12 @@ class MessageHandler extends AuthorizationHandler {
         else {
             this.debugLog(`Reset dataset by ${userName}`);
             this.readDataSet(project);
-            this.broadcastproject_changes(null, {
+            this.broadcastProjectChanges(null, {
                 command : 'dataset',
                 project,
                 dataset : this.dataHandler.getProjectData(project)
             });
-            this.broadcastproject_changes(null, { command : 'reset', userName, project });
+            this.broadcastProjectChanges(null, { command : 'reset', userName, project });
         }
     }
 
@@ -97,19 +97,17 @@ class MessageHandler extends AuthorizationHandler {
         });
     }
 
-    broadcastproject_changes(ws, data) {
-        const { project } = data;
-        const message = JSON.stringify(data);
+    broadcastProjectChanges(ws, message) {
+        const { project } = message;
+        const response = JSON.stringify({ command : 'project_change', data : message });
 
         this.projectSubscribersMap[project].forEach(client => {
-            if (client !== ws) {
-                client.send(message);
-            }
+            client.send(response);
         });
     }
 
     /**
-     * Sends current user names to all online clients
+     * Sends current usernames to all online clients
      */
     broadcastUsers() {
         const users = [];
@@ -117,7 +115,7 @@ class MessageHandler extends AuthorizationHandler {
             users.push(client.userName);
         });
         this.debugLog(`Broadcast users: ${JSON.stringify(users)}`);
-        this.broadcast(null, { command : 'users', users });
+        this.broadcast(null, { command : 'users', data : { users } });
     }
 
     //#region Message handlers
@@ -143,7 +141,7 @@ class MessageHandler extends AuthorizationHandler {
 
         if (logged) {
             ws.userName = login;
-            ws.send(JSON.stringify({ command : 'login' }));
+            ws.send(JSON.stringify({ command : 'login', data : { client : ws.id } }));
             this.broadcast(ws, { command : 'login' });
 
             this.broadcastUsers();
@@ -170,20 +168,22 @@ class MessageHandler extends AuthorizationHandler {
     handleProjects(ws) {
         ws.send(JSON.stringify({
             command : 'projects',
-            data    : this.dataHandler.getProjectsMetadata(this.getUserProjects(ws.userName))
+            data    :  {
+                projects : this.dataHandler.getProjectsMetadata(this.getUserProjects(ws.userName))
+            }
         }));
     }
 
     requireSubscription(fn) {
-        return (ws, message) => {
-            const { command, data : { project } } = message;
+        return (ws, message, command) => {
+            const { project } = message;
             if (this.isClientSubscribedToProject(ws, project)) {
-                return fn.call(this, ws, message);
+                return fn.call(this, ws, message, command);
             }
             else {
                 ws.send(JSON.stringify({
                     command,
-                    data: {
+                    data  : {
                         project
                     },
                     error : 'Subscription to project is required. Load project first'
@@ -192,39 +192,37 @@ class MessageHandler extends AuthorizationHandler {
         };
     }
 
-    handleReset(ws, { data : { project } }) {
+    handleReset(ws, { project }) {
         this.resetDataSet(project, ws.userName);
     }
 
     handleDataset(ws, message) {
-        const { data : { project } } = message;
+        const { project } = message;
 
         this.subscribeClientToProject(ws, project);
 
-        message.data.dataset = this.dataHandler.getProjectData(project);
+        message.dataset = this.dataHandler.getProjectData(project);
 
-        ws.send(JSON.stringify(message));
+        ws.send(JSON.stringify({ command : 'dataset', data : message }));
 
         this.debugLog('Sent dataset to ' + ws.userName);
     }
 
     handleProjectChange(ws, data) {
-        const { command, project } = data;
+        const { project } = data;
 
-        for (const revision of data.data) {
-            this.dataHandler.handleproject_changes(project, revision.changes);
-        }
-
-        const result = data.data.map(revision => {
+        const revisions = data.revisions.map(revision => {
             return {
-                revisionId      : getNextRevision(),
-                localRevisionId : revision.revisionId,
-                clientId        : revision.clientId,
-                changes         : this.dataHandler.handleproject_changes(project, revision.changes).changes
+                revision      : this.getNextRevision(project),
+                localRevision : revision.revision,
+                client        : ws.id,
+                changes       : this.dataHandler.handleProjectChanges(project, revision.changes).changes
             };
         });
 
-        this.broadcastproject_changes(ws, { command, project, data : result });
+        this.projectRevisionsMap[project].revisions.push(...revisions);
+
+        this.broadcastProjectChanges(ws, { revisions, project });
     }
 
     handleRequestVersionAutoSave(ws, data) {
@@ -237,7 +235,7 @@ class MessageHandler extends AuthorizationHandler {
         if (!lastAutoSaveOK || (now - lastAutoSaveOK > me.minAutoSaveInterval)) {
             ws.send(JSON.stringify({
                 command : 'versionAutoSaveOK',
-                project
+                data    : { project }
             }));
             me.lastAutoSaveOK.set(project, now);
         }
@@ -252,6 +250,10 @@ class MessageHandler extends AuthorizationHandler {
 
         // Second add current client to the new project subscriptions
         const subscribers = this.projectSubscribersMap[project] = (this.projectSubscribersMap[project] || new Set());
+
+        if (!(project in this.projectRevisionsMap)) {
+            this.projectRevisionsMap[project] = { counter : 1, revisions : [] };
+        }
 
         subscribers.add(ws);
     }

@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
 const { awaitNextCommand, awaitAuth } = require('./util.js');
 
-// address 8084 is in use in github actions?
+// address 8084 is in use in GitHub actions?
 const server = new WebSocketServer({ port : 8087 });
 
 beforeAll(() => server.init());
@@ -16,8 +16,10 @@ test('Unauthorized user should not be able load project', async () => {
 
     const got = await awaitNextCommand(ws, 'dataset', {
         command : 'dataset',
-        // user foo is not authorized to do this
-        project : 3
+        data    : {
+            // user foo is not authorized to do this
+            project : 3
+        }
     });
 
     expect(got).toEqual({ command : 'dataset', error : expect.any(String) });
@@ -32,12 +34,19 @@ test('Unauthorized user should not be able to make changes to project', async ()
 
     const got = await awaitNextCommand(ws, 'project_change', {
         command : 'project_change',
-        // user foo is not authorized to do this
-        project : 3,
-        changes : {
-            tasks : {
-                added : [{ $PhantomId : '_generated1' }]
-            }
+        data    : {
+            // user foo is not authorized to do this
+            project   : 3,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks : {
+                            added : [{ $PhantomId : '_generated1' }]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -53,8 +62,10 @@ test('Unauthorized user should not be able to reset project', async () => {
 
     const got = await awaitNextCommand(ws, 'reset', {
         command : 'reset',
-        // user foo is not authorized to do this
-        project : 3
+        data    : {
+            // user foo is not authorized to do this
+            project : 3
+        }
     });
 
     expect(got).toEqual({ command : 'reset', error : expect.any(String) });
