@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const { WebSocketServer } = require('../src/server.js');
 const { awaitNextCommand, awaitAuth, awaitDataset, waitForConnectionOpen, awaitNextMessage } = require('./util.js');
 
-const server = new WebSocketServer({ port : 8085 });
+const server = new WebSocketServer({ port : 8088 });
 
 beforeAll(() => server.init());
 
@@ -26,22 +26,48 @@ test('User should not receive project change message if he has not loaded any pr
 
     await Promise.all([
         awaitAuth(ws1, 'alex', 'alex'),
-        awaitAuth(ws2, 'maxim', 'maxim'),
+        awaitAuth(ws2, 'maxim', 'maxim')
     ]);
 
     await awaitNextCommand(ws1, 'dataset', {
         command : 'dataset',
-        // user foo is not authorized to do this
-        project : 1
+        data    : {
+            // user foo is not authorized to do this
+            project : 1
+        }
     });
 
-    const [{ value : response1 }, { reason: response2 }] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'project_change', { command : 'project_change', project : 1, changes : { tasks : { added : [{ $PhantomId : '_generated1' }]} } }),
+    const [{ value : response1 }, { reason : response2 }] = await Promise.allSettled([
+        awaitNextCommand(ws1, 'project_change', {
+            command : 'project_change',
+            data    : {
+                project   : 1,
+                revisions : [
+                    {
+                        revision : 'local-1',
+                        changes  : { tasks : { added : [{ $PhantomId : '_generated1' }] } }
+                    }
+                ]
+            }
+        }),
         awaitNextCommand(ws2, 'project_change')
     ]);
 
-    expect(response1).toEqual(expect.objectContaining({ command : 'project_change', changes : expect.any(Object) }));
-    expect(response2).toEqual('timeout');
+    expect(response1).toEqual(expect.objectContaining({
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws1.clientId,
+                    changes       : expect.any(Object)
+                }
+            ]
+        }
+    }));
+    expect(response2).toMatch(/timeout/);
 
     ws1.terminate();
     ws2.terminate();
@@ -52,9 +78,25 @@ test('User should not be able to make changes to project he has not loaded', asy
 
     await awaitAuth(ws);
 
-    const got = await awaitNextCommand(ws, 'project_change', { command : 'project_change', project : 1, changes : {}});
+    const got = await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {}
+                }
+            ]
+        }
+    });
 
-    expect(got).toEqual({ command : 'project_change', project : 1, error : expect.stringMatching(/project/i) });
+    expect(got).toEqual({
+        command : 'project_change',
+        data    : {
+            project : 1
+        },
+        error : expect.stringMatching(/project/i) });
 
     ws.terminate();
 });
@@ -65,12 +107,12 @@ test('User should not be able to reset project he has not loaded', async () => {
     await awaitAuth(ws);
 
     const [{ value : response1 }, { reason : response2 }] = await Promise.allSettled([
-        awaitNextCommand(ws, 'reset', { command : 'reset', project : 1 }),
+        awaitNextCommand(ws, 'reset', { command : 'reset', data : { project : 1 } }),
         awaitNextCommand(ws, 'dataset')
     ]);
 
-    expect(response1).toEqual({ command : 'reset', project : 1, error : expect.stringMatching(/project/i) });
-    expect(response2).toEqual('timeout');
+    expect(response1).toEqual({ command : 'reset', data : { project : 1 }, error : expect.stringMatching(/project/i) });
+    expect(response2).toMatch(/timeout/);
 
     ws.terminate();
 });
@@ -85,12 +127,20 @@ test('User should not receive dataset if he is not subscribed to the project', a
     ]);
 
     const [response1, { reason : response2 }] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'dataset', { command : 'reset', project : 1 }),
+        awaitNextCommand(ws1, 'dataset', { command : 'reset', data : { project : 1 } }),
         awaitNextCommand(ws2, 'dataset')
     ]);
 
-    expect(response1).toEqual(expect.objectContaining({ value : { command : 'dataset', project : 1, dataset : expect.anything() } }));
-    expect(response2).toEqual('timeout');
+    expect(response1).toEqual(expect.objectContaining({
+        value : {
+            command : 'dataset',
+            data    : {
+                project : 1,
+                dataset : expect.anything()
+            }
+        }
+    }));
+    expect(response2).toMatch(/timeout/);
 
     ws1.terminate();
 });
@@ -133,11 +183,35 @@ test('Should notify subscribers about project reset', async () => {
         awaitNextMessage(ws5, null, true)
     ]);
 
-    expect(response1).toEqual(expect.objectContaining({ value : { command : 'dataset', project : 3, dataset : expect.anything() } }));
-    expect(response2).toEqual(expect.objectContaining({ value : { command : 'dataset', project : 2, dataset : expect.anything() } }));
-    expect(response3).toEqual(expect.objectContaining({ value : { command : 'dataset', project : 1, dataset : expect.anything() } }));
-    expect(response4).toEqual(expect.objectContaining({ reason : 'timeout' }));
-    expect(response5).toEqual(expect.objectContaining({ reason : 'timeout' }));
+    expect(response1).toEqual(expect.objectContaining({
+        value : {
+            command : 'dataset',
+            data    : {
+                project : 3,
+                dataset : expect.anything()
+            }
+        }
+    }));
+    expect(response2).toEqual(expect.objectContaining({
+        value : {
+            command : 'dataset',
+            data    : {
+                project : 2,
+                dataset : expect.anything()
+            }
+        }
+    }));
+    expect(response3).toEqual(expect.objectContaining({
+        value : {
+            command : 'dataset',
+            data    : {
+                project : 1,
+                dataset : expect.anything()
+            }
+        }
+    }));
+    expect(response4).toEqual(expect.objectContaining({ reason : expect.stringMatching(/timeout/) }));
+    expect(response5).toEqual(expect.objectContaining({ reason : expect.stringMatching(/timeout/) }));
 
     // Every authorized client should receive 2 events: dataset and reset, unauthorized clients get no data
     expect(counterMap).toEqual({ ws1 : 2, ws2 : 2, ws3 : 2, ws4 : 0, ws5 : 0 });

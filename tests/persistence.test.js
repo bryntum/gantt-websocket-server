@@ -3,7 +3,7 @@ const { WebSocketServer } = require('../src/server.js');
 const { awaitNextCommand, awaitAuth, awaitDataset } = require('./util.js');
 const { TaskStore } = require('@bryntum/gantt/gantt.node.cjs');
 
-const server = new WebSocketServer({ port : 8085 });
+const server = new WebSocketServer({ port : 8087 });
 
 beforeAll(() => server.init());
 
@@ -18,12 +18,21 @@ test('Changes should be persisted and served to new clients', async () => {
     expect(got).not.toBeUndefined();
 
     await awaitNextCommand(ws1, 'project_change', {
-        command : 'project_change', project : 1, changes : {
-            tasks : {
-                added : [{ id : 101, name : 'Task 1.6', parentId : 1 }],
-                updated : [{ id : 12, parentId : 11 }, { id : 13, percentDone : 0 }],
-                removed : [{ id : 21 }]
-            }
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision : 'local-1',
+                    changes  : {
+                        tasks : {
+                            added   : [{ id : 101, name : 'Task 1.6', parentId : 1 }],
+                            updated : [{ id : 12, parentId : 11 }, { id : 13, percentDone : 0 }],
+                            removed : [{ id : 21 }]
+                        }
+                    }
+                }
+            ]
         }
     });
 
@@ -31,9 +40,9 @@ test('Changes should be persisted and served to new clients', async () => {
 
     await awaitAuth(ws2);
 
-    const dataset = await awaitDataset(ws2, 1);
+    const { data } = await awaitDataset(ws2, 1);
 
-    const store = new TaskStore({ data : dataset.dataset.tasksData });
+    const store = new TaskStore({ data : data.dataset.tasksData });
 
     // child added
     expect(store.getById(11).children.length).toBe(1);

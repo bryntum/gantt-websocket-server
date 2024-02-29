@@ -87,7 +87,7 @@ test('Should broadcast logout on close', async () => {
         ws2.close()
     ]);
 
-    expect(logout).toEqual({ command : 'logout', userName : 'bar' });
+    expect(logout).toEqual({ command : 'logout', data : { userName : 'bar' } });
 
     ws2.terminate();
     ws1.terminate();
@@ -111,7 +111,7 @@ test('Should broadcast logout on logout', async () => {
         awaitNextCommand(ws2, 'logout', { command : 'logout' })
     ]);
 
-    expect(result1).toEqual(expect.objectContaining({ value : { command : 'logout', userName : 'bar' } }));
+    expect(result1).toEqual(expect.objectContaining({ value : { command : 'logout', data : { userName : 'bar' } } }));
     expect(result2).not.toEqual(expect.objectContaining({ status : 'rejected', reason : 'timeout' }));
     expect(counter).toEqual(1);
 

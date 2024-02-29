@@ -48,8 +48,10 @@ class MessageHandler extends AuthorizationHandler {
         Object.entries(this.projectSubscribersMap).forEach(([project, subscribers]) => {
             const datasetMessage = JSON.stringify({
                 command : 'dataset',
-                project : Number(project),
-                dataset : this.dataHandler.getProjectData(Number(project))
+                data    : {
+                    project : Number(project),
+                    dataset : this.dataHandler.getProjectData(Number(project))
+                }
             });
             const resetMessage = JSON.stringify({ command : 'reset', userName : 'Server' });
 
@@ -72,10 +74,12 @@ class MessageHandler extends AuthorizationHandler {
             this.readDataSet(project);
             this.broadcastProjectChanges(null, {
                 command : 'dataset',
-                project,
-                dataset : this.dataHandler.getProjectData(project)
+                data    : {
+                    project,
+                    dataset : this.dataHandler.getProjectData(project)
+                }
             });
-            this.broadcastProjectChanges(null, { command : 'reset', userName, project });
+            this.broadcastProjectChanges(null, { command : 'reset', data : { userName, project } });
         }
     }
 
@@ -86,7 +90,7 @@ class MessageHandler extends AuthorizationHandler {
      */
     broadcast(sender, data) {
         // Attach sender's username to the data
-        data.userName = sender ? sender.userName : undefined;
+        data.data = Object.assign((data.data ?? {}), { userName : sender ? sender.userName : undefined });
 
         this.wss.clients.forEach(client => {
             // Only send broadcast messages to authorized clients
@@ -98,8 +102,8 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     broadcastProjectChanges(ws, message) {
-        const { project } = message;
-        const response = JSON.stringify({ command : 'project_change', data : message });
+        const { data : { project } } = message;
+        const response = JSON.stringify(message);
 
         this.projectSubscribersMap[project].forEach(client => {
             client.send(response);
@@ -222,7 +226,7 @@ class MessageHandler extends AuthorizationHandler {
 
         this.projectRevisionsMap[project].revisions.push(...revisions);
 
-        this.broadcastProjectChanges(ws, { revisions, project });
+        this.broadcastProjectChanges(ws, { command : 'project_change', data : { revisions, project } });
     }
 
     handleRequestVersionAutoSave(ws, data) {

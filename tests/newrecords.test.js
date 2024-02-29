@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const { awaitNextCommand, awaitDataset } = require('./util.js');
 const { WebSocketServer } = require('../src/server.js');
 
-const server = new WebSocketServer({ port : 8082 });
+const server = new WebSocketServer({ port : 8086 });
 
 beforeAll(() => server.init());
 
