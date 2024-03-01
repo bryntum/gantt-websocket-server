@@ -53,7 +53,7 @@ class MessageHandler extends AuthorizationHandler {
                     dataset : this.dataHandler.getProjectData(Number(project))
                 }
             });
-            const resetMessage = JSON.stringify({ command : 'reset', userName : 'Server' });
+            const resetMessage = JSON.stringify({ command : 'reset', data : { userName : 'Server' } });
 
             subscribers.forEach(client => {
                 client.send(datasetMessage);
@@ -160,11 +160,11 @@ class MessageHandler extends AuthorizationHandler {
         Object.values(this.projectSubscribersMap).forEach(map => map.delete(ws));
 
         if (ws.readyState === ws.OPEN) {
-            ws.send(JSON.stringify({ command : 'logout' }));
+            ws.send(JSON.stringify({ command : 'logout', data : {} }));
             ws.close();
         }
         else {
-            this.broadcast(ws, { command : 'logout' });
+            this.broadcast(ws, { command : 'logout', data : {} });
             this.broadcastUsers();
         }
     }
