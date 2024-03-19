@@ -59,7 +59,13 @@ class DataHandler {
         const project = this.storage.getProject(projectId);
 
         for (const key in changes) {
-            this.handleStoreChanges(project.data[key], changes[key], PHANTOMID_ID_MAP);
+            const storeChanges = changes[key];
+
+            this.handleStoreChanges(project.data[key], storeChanges, PHANTOMID_ID_MAP);
+
+            if ('$input' in storeChanges) {
+                this.handleStoreChanges(project.data[key], storeChanges.$input, PHANTOMID_ID_MAP);
+            }
         }
 
         // Changes object already contains correct ids
@@ -69,10 +75,15 @@ class DataHandler {
     // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
     handleStoreChanges(store, changes, PHANTOMID_ID_MAP) {
         changes.added?.forEach(record => {
-            // For every new record we should generate an id
-            record.id = this.storage.generateId(store.storeId);
-            PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
-            // We need to keep record phantom id to assign correct id on a client which added a record
+            if (PHANTOMID_ID_MAP.has(record.$PhantomId)) {
+                record.id = PHANTOMID_ID_MAP.get(record.$PhantomId);
+            }
+            else {
+                // For every new record we should generate an id
+                record.id = this.storage.generateId(store.storeId);
+                PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
+                // We need to keep record phantom id to assign correct id on a client which added a record
+            }
 
             // Replace phantom parent id with parent id
             if ('$PhantomParentId' in record) {
