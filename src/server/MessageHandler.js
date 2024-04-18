@@ -216,12 +216,18 @@ class MessageHandler extends AuthorizationHandler {
         const { project } = data;
 
         const revisions = data.revisions.map(revision => {
-            return {
+            const result = {
                 revision      : this.getNextRevision(project),
-                localRevision : revision.revision,
+                localRevision : revision.revisionId,
                 client        : ws.id,
                 changes       : this.dataHandler.handleProjectChanges(project, revision.changes).changes
             };
+
+            if (revision.conflictResolutionFor) {
+                result.conflictResolutionFor = revision.conflictResolutionFor;
+            }
+
+            return result;
         });
 
         this.projectRevisionsMap[project].revisions.push(...revisions);

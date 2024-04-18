@@ -13,7 +13,10 @@ class Project {
             this.data = {
                 tasks        : new Store({ modelClass : TaskModel, tree : true, transformFlatData : true, data : data.tasks.rows }),
                 resources    : new Store({ data : data.resources.rows }),
-                dependencies : new Store({ data : data.dependencies.rows }),
+                dependencies : new Store({
+                    fields : ['id', 'fromTask', 'toTask', 'active', 'type', 'lag', 'lagUnit'],
+                    data : data.dependencies.rows
+                }),
                 assignments  : new Store({ data : data.assignments.rows }),
                 calendars    : new Store({ data : data.calendars.rows }),
                 versions     : new Store({ data : data.versions.rows }),
