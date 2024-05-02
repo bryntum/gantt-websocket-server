@@ -145,8 +145,8 @@ class MessageHandler extends AuthorizationHandler {
 
         if (logged) {
             ws.userName = login;
-            ws.send(JSON.stringify({ command : 'login', data : { client : ws.id } }));
-            this.broadcast(ws, { command : 'login' });
+            ws.send(JSON.stringify({ command : 'login', data : { client : ws.id, userName : login } }));
+            this.broadcast(ws, { command : 'join' });
 
             this.broadcastUsers();
         }
