@@ -74,6 +74,108 @@ test('Should respond to client if task was added', async () => {
     ws.terminate();
 });
 
+test('Should respond to client if new task was updated', async () => {
+    const ws = new WebSocket(server.address);
+
+    await awaitDataset(ws, 1);
+
+    let request = {
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revisionId : 'local-1',
+                    changes    : {
+                        tasks        : {
+                            $input : {
+                                added : [{ $PhantomId : 'newrec1' }]
+                            },
+                            added : [{ $PhantomId : 'newrec1' }]
+                        }
+                    }
+                }
+            ]
+        }
+    };
+
+    let expected = expect.objectContaining({
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-1',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            $input : {
+                                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            },
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                        }
+                    }
+                }
+            ]
+        }
+    });
+
+    let response = await awaitNextCommand(ws, 'project_change', request);
+
+    expect(response).toEqual(expected);
+
+    request = {
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revisionId : 'local-2',
+                    changes    : {
+                        tasks        : {
+                            $input : {
+                                added : [{ $PhantomId : 'newrec1', name : 'a' }]
+                            },
+                            added : [{ $PhantomId : 'newrec1', name : 'a' }]
+                        }
+                    }
+                }
+            ]
+        }
+    };
+
+    expected = expect.objectContaining({
+        command : 'project_change',
+        data    : {
+            project   : 1,
+            revisions : [
+                {
+                    revision      : expect.stringMatching(/server-\d/),
+                    localRevision : 'local-2',
+                    client        : ws.clientId,
+                    changes       : {
+                        tasks        : {
+                            $input : {
+                                added   : [],
+                                updated : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                            },
+                            added   : [],
+                            updated : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                        }
+                    }
+                }
+            ]
+        }
+    });
+
+    response = await awaitNextCommand(ws, 'project_change', request);
+
+    expect(response).toEqual(expected);
+
+    ws.terminate();
+});
+
 test('Should respond to client if resource was added', async () => {
     const ws = new WebSocket(server.address);
 

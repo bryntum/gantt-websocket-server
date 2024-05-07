@@ -8,6 +8,8 @@ const defaultConfig = {
     ]
 };
 
+const PHANTOMID_ID_MAP = new Map();
+
 class DataHandler {
     constructor() {
         this.storage = new Storage(defaultConfig);
@@ -36,7 +38,7 @@ class DataHandler {
         }
     }
 
-    replacePhantomId(record, PHANTOMID_ID_MAP) {
+    replacePhantomId(record) {
         // Look for values that match keys in PHANTOMID_ID_MAP. If we found such value it means it is a link, and we
         // should replace phantom id with generated one
         for (const key in record) {
@@ -54,47 +56,76 @@ class DataHandler {
     }
 
     handleProjectChanges(projectId, changes) {
-        const PHANTOMID_ID_MAP = new Map();
-
         const project = this.storage.getProject(projectId);
 
-        for (const key in changes) {
-            const storeChanges = changes[key];
-
-            this.handleStoreChanges(project.data[key], storeChanges, PHANTOMID_ID_MAP);
-
-            if ('$input' in storeChanges) {
-                this.handleStoreChanges(project.data[key], storeChanges.$input, PHANTOMID_ID_MAP);
+        ['calendars', 'resources', 'tasks', 'dependencies', 'assignments', 'versions', 'changelogs'].forEach(key => {
+            if (key in changes) {
+                this.handleStoreChanges(project.data[key], changes[key]);
             }
-        }
+        });
 
         // Changes object already contains correct ids
         return { changes, hasNewRecords : PHANTOMID_ID_MAP.size !== 0 };
     }
 
     // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
-    handleStoreChanges(store, changes, PHANTOMID_ID_MAP) {
-        changes.added?.forEach(record => {
-            if (PHANTOMID_ID_MAP.has(record.$PhantomId)) {
-                record.id = PHANTOMID_ID_MAP.get(record.$PhantomId);
-            }
-            else {
-                // For every new record we should generate an id
-                record.id = this.storage.generateId(store.storeId);
-                PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
-                // We need to keep record phantom id to assign correct id on a client which added a record
-            }
+    handleStoreChanges(store, changes) {
+        if (changes.added) {
+            for (let i = 0; i < changes.added.length; i++) {
+                const record = changes.added[i];
+                const phantomId = record.$PhantomId;
 
-            // Replace phantom parent id with parent id
-            if ('$PhantomParentId' in record) {
-                record.parentId = PHANTOMID_ID_MAP[record.$PhantomParentId];
-                // Phantom parent id is not required, on the other hand
-                delete record.$PhantomParentId;
-            }
+                // If phantom id is already processed, we should move this record to the list of updated records
+                if (PHANTOMID_ID_MAP.has(phantomId)) {
+                    record.id = PHANTOMID_ID_MAP.get(phantomId);
+                    delete record.$PhantomId;
 
-            // Replace phantom ids with real ones
-            this.replacePhantomId(record, PHANTOMID_ID_MAP);
-        });
+                    // Move record from added to updated
+                    changes.updated = changes.updated || [];
+                    changes.updated.push(record);
+                    changes.added.splice(i, 1);
+
+                    // Same for the $input
+                    if (changes.$input?.added) {
+                        const inputIndex = changes.$input.added.findIndex(inputRecord => inputRecord.$PhantomId === phantomId);
+                        const inputRecord = changes.$input.added[inputIndex];
+
+                        inputRecord.id = record.id;
+                        delete inputRecord.$PhantomId;
+                        this.replacePhantomId(inputRecord);
+
+                        if (inputIndex !== -1) {
+                            changes.$input.updated = changes.$input.updated || [];
+                            changes.$input.updated.push(inputRecord);
+                            changes.$input.added.splice(inputIndex, 1);
+                        }
+                    }
+
+                    i--;
+                }
+                else {
+                    record.id = this.storage.generateId(store.storeId);
+                    PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
+
+                    const inputRecord = changes.$input.added?.find(r => r.$PhantomId === phantomId);
+
+                    if (inputRecord) {
+                        inputRecord.id = record.id;
+                        this.replacePhantomId(inputRecord);
+                    }
+                }
+
+                // Replace phantom parent id with parent id
+                if ('$PhantomParentId' in record) {
+                    record.parentId = PHANTOMID_ID_MAP[record.$PhantomParentId];
+                    // Phantom parent id is not required, on the other hand
+                    delete record.$PhantomParentId;
+                }
+
+                // Replace phantom ids with real ones
+                this.replacePhantomId(record);
+            }
+        }
 
         changes.updated?.forEach(record => {
             const localRecord = store.getById(record.id);
@@ -109,7 +140,7 @@ class DataHandler {
             }
         });
 
-        store.applyChangeset(changes);
+        store.applyChangeset({ added : changes.added, updated : changes.updated, removed : changes.removed });
     }
 }
 
