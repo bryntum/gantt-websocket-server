@@ -1,4 +1,5 @@
 const { Storage } = require('./data/storage.js');
+const { omitLazyFields } = require('./data/project.js');
 
 const defaultConfig = {
     projects : [

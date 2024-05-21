@@ -1,5 +1,24 @@
 const fs = require('fs');
-const { Store, TaskModel } = require('@bryntum/gantt/gantt.node.cjs');
+const { Store, TaskModel, Model } = require('@bryntum/gantt/gantt.node.cjs');
+
+const lazyFields = ['content'];
+
+function omitLazyFields(record) {
+    if (!record || lazyFields.length === 0) {
+        return record;
+    }
+    const clonedRecord = Object.assign({}, record);
+    for (const lazyField of lazyFields) {
+        delete clonedRecord[lazyField];
+    }
+    return clonedRecord;
+}
+
+class ModelWithLazyFields extends Model {
+    toJSON() {
+        return omitLazyFields(super.toJSON());
+    }
+}
 
 class Project {
     constructor(config) {
@@ -19,7 +38,7 @@ class Project {
                 }),
                 assignments  : new Store({ data : data.assignments.rows }),
                 calendars    : new Store({ data : data.calendars.rows }),
-                versions     : new Store({ data : data.versions.rows }),
+                versions     : new Store({ data : data.versions.rows, modelClass : ModelWithLazyFields }),
                 changelogs   : new Store({ data : [] }),
                 project      : data.project
             };
@@ -30,4 +49,4 @@ class Project {
     }
 }
 
-module.exports = { Project }
+module.exports = { Project, omitLazyFields }

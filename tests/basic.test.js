@@ -374,36 +374,47 @@ test('Should save and retrieve version content', async () => {
 
     await awaitDataset(ws, 1);
 
-    const putResponse = await awaitNextCommand(ws, 'projectChange', {
-        command : 'projectChange',
-        project : 1,
-        changes : {
-            versions     : {
-                added : [{
-                    $PhantomId : 'newrec1',
-                    name       : 'Version 1',
-                    savedAt    : '2022-09-08T14:09:29.180Z',
-                    content    : versionContent
-                }]
-            }
+    const putResponse = await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
+        data    : {
+            project : 1,
+            revisions : [{
+                revision : 'local-1',
+                changes  : {
+                    versions     : {
+                        added : [{
+                            $PhantomId : 'newrec1',
+                            name       : 'Version 1',
+                            savedAt    : '2022-09-08T14:09:29.180Z',
+                            content    : versionContent
+                        }]
+                    }
+                }
+            }]
         }
     });
 
-    // Lazy-loaded content field not returned in response
-    expect(putResponse.changes.versions.added[0].content).toBeUndefined();
-    const versionId = putResponse.changes.versions.added[0].id;
+    const addedVersions = putResponse.data.revisions[0].changes.versions.added;
 
-    const loadResponse = await awaitNextCommand(ws, 'loadVersionContent', {
-        command: 'loadVersionContent',
-        project: 1,
-        versionId
+    // Lazy-loaded content field not returned in response
+    expect(addedVersions[0].content).toBeUndefined();
+    const versionId = addedVersions[0].id;
+
+    const loadResponse = await awaitNextCommand(ws, 'load_version_content', {
+        command: 'load_version_content',
+        data: {
+            project: 1,
+            versionId
+        }
     });
 
     expect(loadResponse).toEqual({
-        command: 'loadVersionContent',
-        project: 1,
-        versionId,
-        content: versionContent
+        command: 'load_version_content',
+        data: {
+            project: 1,
+            versionId,
+            content: versionContent
+        }
     });
 
     ws.terminate();
@@ -420,8 +431,8 @@ test('Should not send version content by default on dataset command', async () =
 
     await awaitDataset(ws, 1);
 
-    await awaitNextCommand(ws, 'projectChange', {
-        command : 'projectChange',
+    await awaitNextCommand(ws, 'project_change', {
+        command : 'project_change',
         project : 1,
         changes : {
             versions     : {
