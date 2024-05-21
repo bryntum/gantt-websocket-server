@@ -40,7 +40,7 @@ test('Should let in anonymous user', async () => {
 
     const got = await awaitAuth(ws, 'foo');
 
-    expect(got).toEqual({ command : 'login', data : { client : ws.clientId } });
+    expect(got).toEqual({ command : 'login', data : { client : ws.clientId, userName : 'foo' } });
 
     ws.terminate();
 });
@@ -151,7 +151,7 @@ test('Login procedure should have specific amount of messages', async () => {
     await awaitTimeout();
 
     expect(messages).toEqual([
-        { command : 'login', data : { client : ws.clientId } },
+        { command : 'login', data : { client : ws.clientId, userName : 'admin' } },
         { command : 'users', data : { users : expect.arrayContaining(['admin']) } }
     ]);
 

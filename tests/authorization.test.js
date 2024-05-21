@@ -7,6 +7,8 @@ const server = new WebSocketServer({ port : 8084 });
 
 beforeAll(() => server.init());
 
+beforeEach(() => server.resetDataSet());
+
 afterAll(() => server.destroy());
 
 test('Unauthorized user should not be able load project', async () => {

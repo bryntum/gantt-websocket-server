@@ -8,7 +8,7 @@ const defaultConfig = {
     ]
 };
 
-const PHANTOMID_ID_MAP = new Map();
+let PHANTOMID_ID_MAP = new Map();
 
 class DataHandler {
     constructor() {
@@ -35,6 +35,7 @@ class DataHandler {
         }
         else {
             this.storage = new Storage(defaultConfig);
+            PHANTOMID_ID_MAP = new Map();
         }
     }
 
@@ -107,7 +108,7 @@ class DataHandler {
                     record.id = this.storage.generateId(store.storeId);
                     PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
 
-                    const inputRecord = changes.$input.added?.find(r => r.$PhantomId === phantomId);
+                    const inputRecord = changes.$input?.added?.find(r => r.$PhantomId === phantomId);
 
                     if (inputRecord) {
                         inputRecord.id = record.id;

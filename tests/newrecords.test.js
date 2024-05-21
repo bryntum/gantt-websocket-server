@@ -8,10 +8,16 @@ beforeAll(() => server.init());
 
 afterAll(() => server.destroy());
 
+let counter = 1;
+
+const nextPhantomId = () => `newrec${counter++}`;
+
 test('Should respond to client if task was added', async () => {
     const ws = new WebSocket(server.address);
 
     await awaitDataset(ws, 1);
+
+    let phantomId = nextPhantomId();
 
     const request = {
         command : 'project_change',
@@ -22,7 +28,7 @@ test('Should respond to client if task was added', async () => {
                     revision : 'local-1',
                     changes  : {
                         tasks        : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         },
                         resources    : {
                             updated : [{ id : 1 }]
@@ -50,7 +56,7 @@ test('Should respond to client if task was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         tasks        : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         },
                         resources    : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -79,19 +85,21 @@ test('Should respond to client if new task was updated', async () => {
 
     await awaitDataset(ws, 1);
 
+    let phantomId = nextPhantomId();
+
     let request = {
         command : 'project_change',
         data    : {
             project   : 1,
             revisions : [
                 {
-                    revisionId : 'local-1',
-                    changes    : {
+                    revision : 'local-1',
+                    changes  : {
                         tasks        : {
                             $input : {
-                                added : [{ $PhantomId : 'newrec1' }]
+                                added : [{ $PhantomId : phantomId }]
                             },
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         }
                     }
                 }
@@ -111,9 +119,9 @@ test('Should respond to client if new task was updated', async () => {
                     changes       : {
                         tasks        : {
                             $input : {
-                                added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                                added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                             },
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         }
                     }
                 }
@@ -125,19 +133,21 @@ test('Should respond to client if new task was updated', async () => {
 
     expect(response).toEqual(expected);
 
+    phantomId = nextPhantomId();
+
     request = {
         command : 'project_change',
         data    : {
             project   : 1,
             revisions : [
                 {
-                    revisionId : 'local-2',
-                    changes    : {
+                    revision : 'local-2',
+                    changes  : {
                         tasks        : {
                             $input : {
-                                added : [{ $PhantomId : 'newrec1', name : 'a' }]
+                                added : [{ $PhantomId : phantomId, name : 'a' }]
                             },
-                            added : [{ $PhantomId : 'newrec1', name : 'a' }]
+                            added : [{ $PhantomId : phantomId, name : 'a' }]
                         }
                     }
                 }
@@ -157,11 +167,9 @@ test('Should respond to client if new task was updated', async () => {
                     changes       : {
                         tasks        : {
                             $input : {
-                                added   : [],
-                                updated : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                                added : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
                             },
-                            added   : [],
-                            updated : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                            added : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
                         }
                     }
                 }
@@ -181,6 +189,8 @@ test('Should respond to client if resource was added', async () => {
 
     await awaitDataset(ws, 1);
 
+    const phantomId = nextPhantomId();
+
     const request = {
         command : 'project_change',
         data    : {
@@ -193,7 +203,7 @@ test('Should respond to client if resource was added', async () => {
                             updated : [{ id : 1 }]
                         },
                         resources    : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         },
                         dependencies : {
                             updated : [{ id : 1 }]
@@ -221,7 +231,7 @@ test('Should respond to client if resource was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         resources    : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         },
                         dependencies : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -247,6 +257,8 @@ test('Should respond to client if dependency was added', async () => {
 
     await awaitDataset(ws, 1);
 
+    const phantomId = nextPhantomId();
+
     const request = {
         command : 'project_change',
         data    : {
@@ -262,7 +274,7 @@ test('Should respond to client if dependency was added', async () => {
                             updated : [{ id : 1 }]
                         },
                         dependencies : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         },
                         assignments  : {
                             updated : [{ id : 1 }]
@@ -290,7 +302,7 @@ test('Should respond to client if dependency was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         dependencies : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         },
                         assignments  : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -313,6 +325,8 @@ test('Should respond to client if assignment was added', async () => {
 
     await awaitDataset(ws, 1);
 
+    const phantomId = nextPhantomId();
+
     const request = {
         command : 'project_change',
         data    : {
@@ -331,7 +345,7 @@ test('Should respond to client if assignment was added', async () => {
                             updated : [{ id : 1 }]
                         },
                         assignments  : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         }
                     }
                 }
@@ -359,7 +373,7 @@ test('Should respond to client if assignment was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         assignments  : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         }
                     }
                 }
@@ -379,6 +393,8 @@ test('Should respond to client if version was added', async () => {
 
     await awaitDataset(ws, 1);
 
+    const phantomId = nextPhantomId();
+
     const request = {
         command : 'project_change',
         data    : {
@@ -388,7 +404,7 @@ test('Should respond to client if version was added', async () => {
                     revision : 'local-1',
                     changes  : {
                         versions : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         }
                     }
                 }
@@ -407,7 +423,7 @@ test('Should respond to client if version was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         versions : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         }
                     }
                 }
@@ -427,6 +443,8 @@ test('Should respond to client if changelog was added', async () => {
 
     await awaitDataset(ws, 1);
 
+    const phantomId = nextPhantomId();
+
     const request = {
         command : 'project_change',
         data    : {
@@ -436,7 +454,7 @@ test('Should respond to client if changelog was added', async () => {
                     revision : 'local-1',
                     changes  : {
                         changelogs : {
-                            added : [{ $PhantomId : 'newrec1' }]
+                            added : [{ $PhantomId : phantomId }]
                         }
                     }
                 }
@@ -455,7 +473,7 @@ test('Should respond to client if changelog was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         changelogs : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
                         }
                     }
                 }

@@ -8,6 +8,8 @@ const server = new WebSocketServer({ port : 8085 });
 
 beforeAll(() => server.init());
 
+beforeEach(() => server.resetDataSet());
+
 afterAll(() => server.destroy());
 
 test('Should greet new user', async () => {
