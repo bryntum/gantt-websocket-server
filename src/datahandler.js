@@ -125,6 +125,9 @@ class DataHandler {
 
                 // Replace phantom ids with real ones
                 this.replacePhantomId(record);
+
+                // Replace with version with lazy-loaded fields omitted for rebroadcast
+                changes.added[i] = omitLazyFields(record);
             }
         }
 
@@ -142,6 +145,11 @@ class DataHandler {
         });
 
         store.applyChangeset({ added : changes.added, updated : changes.updated, removed : changes.removed });
+    }
+
+    getVersionContent(projectId, versionId) {
+        const { versions } = this.storage.getProject(projectId).data;
+        return versions.getById(versionId)?.content;
     }
 }
 

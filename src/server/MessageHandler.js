@@ -13,7 +13,8 @@ class MessageHandler extends AuthorizationHandler {
             'reset'                    : this.requireAuth(this.requireSubscription(this.handleReset)),
             'dataset'                  : this.requireAuth(this.handleDataset),
             'project_change'           : this.requireAuth(this.requireSubscription(this.handleProjectChange)),
-            'request_version_autosave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave))
+            'request_version_autosave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave)),
+            'load_version_content'     : this.requireAuth(this.requireSubscription(this.handleLoadVersionContent))
         };
 
         this.dataHandler = new DataHandler();
@@ -249,6 +250,19 @@ class MessageHandler extends AuthorizationHandler {
             }));
             me.lastAutoSaveOK.set(project, now);
         }
+    }
+
+    handleLoadVersionContent(ws, data) {
+        const
+            { project, versionId } = data,
+            content = this.dataHandler.getVersionContent(project, versionId);
+
+        ws.send(JSON.stringify({
+            command : 'load_version_content',
+            project,
+            versionId,
+            content
+        }));
     }
 
     //#endregion
