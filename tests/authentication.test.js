@@ -11,7 +11,10 @@ afterAll(() => server.destroy());
 test('Should check user login/password', async () => {
     const ws = new WebSocket(server.address);
 
-    const got = await awaitNextMessage(ws, { command : 'login', login : 'admin', password : '' });
+    const got = await awaitNextMessage(ws, { command : 'login', data : {
+            login : 'admin', password : ''
+        }
+    });
 
     expect(got).toEqual({ command : 'login', error : expect.any(String) });
 
@@ -21,11 +24,11 @@ test('Should check user login/password', async () => {
 test('Should not allow empty/non-string login', async () => {
     const ws = new WebSocket(server.address);
 
-    let got = await awaitNextCommand(ws, 'login', { command : 'login', login : '', password : '' });
+    let got = await awaitNextCommand(ws, 'login', { command : 'login', data : { login : '', password : '' } });
 
     expect(got).toEqual({ command : 'login', error : expect.any(String) });
 
-    got = await awaitNextCommand(ws, 'login', { command : 'login', login : true, password : '' });
+    got = await awaitNextCommand(ws, 'login', { command : 'login', data : { login : true, password : '' } });
 
     expect(got).toEqual({ command : 'login', error : expect.any(String) });
 
@@ -37,7 +40,7 @@ test('Should let in anonymous user', async () => {
 
     const got = await awaitAuth(ws, 'foo');
 
-    expect(got).toEqual({ command : 'login' });
+    expect(got).toEqual({ command : 'login', data : { client : ws.clientId, userName : 'foo' } });
 
     ws.terminate();
 });
@@ -51,20 +54,22 @@ test('Should return list of project user is authorized to access', async () => {
 
     expect(got).toEqual(expect.objectContaining({
         command  : 'projects',
-        projects : expect.arrayContaining([
-            {
-                id : 1,
-                name : 'SaaS'
-            },
-            {
-                id : 2,
-                name : 'Website'
-            },
-            {
-                id : 3,
-                name : 'Backend'
-            }
-        ])
+        data     : {
+            projects : expect.arrayContaining([
+                {
+                    id : 1,
+                    name : 'SaaS'
+                },
+                {
+                    id : 2,
+                    name : 'Website'
+                },
+                {
+                    id : 3,
+                    name : 'Backend'
+                }
+            ])
+        }
     }));
 
     ws.terminate();
@@ -82,7 +87,7 @@ test('Should broadcast logout on close', async () => {
         ws2.close()
     ]);
 
-    expect(logout).toEqual({ command : 'logout', userName : 'bar' });
+    expect(logout).toEqual({ command : 'logout', data : { userName : 'bar' } });
 
     ws2.terminate();
     ws1.terminate();
@@ -106,7 +111,7 @@ test('Should broadcast logout on logout', async () => {
         awaitNextCommand(ws2, 'logout', { command : 'logout' })
     ]);
 
-    expect(result1).toEqual(expect.objectContaining({ value : { command : 'logout', userName : 'bar' } }));
+    expect(result1).toEqual(expect.objectContaining({ value : { command : 'logout', data : { userName : 'bar' } } }));
     expect(result2).not.toEqual(expect.objectContaining({ status : 'rejected', reason : 'timeout' }));
     expect(counter).toEqual(1);
 
@@ -122,7 +127,7 @@ test('None of the commands should work if user is not logged', async () => {
         'projects',
         'reset',
         'dataset',
-        'projectChange'
+        'project_change'
     ]) {
         const got = await awaitNextMessage(ws, { command });
 
@@ -146,8 +151,8 @@ test('Login procedure should have specific amount of messages', async () => {
     await awaitTimeout();
 
     expect(messages).toEqual([
-        { command : 'login' },
-        { command : 'users', users : ['admin'] }
+        { command : 'login', data : { client : ws.clientId, userName : 'admin' } },
+        { command : 'users', data : { users : expect.arrayContaining(['admin']) } }
     ]);
 
     ws.terminate();

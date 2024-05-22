@@ -10,10 +10,12 @@
   "author": "Bryntum",
   "license": "ISC",
   "dependencies": {
+    "@bryntum/gantt": "5.5.3",
     "network-interfaces": "~1.1.0",
     "ws": "~6.1.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "eslint": "^8.19.0",
     "jest": "~27.5.1"
   }

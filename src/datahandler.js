@@ -1,8 +1,25 @@
-const { Storage } = require('./storage.js');
+const { Storage } = require('./data/storage.js');
+const { omitLazyFields } = require('./data/project.js');
+
+const defaultConfig = {
+    projects : [
+        { id : 1, name : 'SaaS', source : 'data/saas.json'},
+        { id : 2, name : 'Website', source : 'data/website.json'},
+        { id : 3, name : 'Backend', source : 'data/backend.json'}
+    ]
+};
+
+let PHANTOMID_ID_MAP = new Map();
 
 class DataHandler {
     constructor() {
-        this.storage = new Storage();
+        this.storage = new Storage(defaultConfig);
+
+        this.load();
+    }
+
+    load() {
+        this.storage.load();
     }
 
     getProjectData(id) {
@@ -18,77 +35,117 @@ class DataHandler {
             this.storage.reset(id);
         }
         else {
-            this.storage = new Storage();
+            this.storage = new Storage(defaultConfig);
+            PHANTOMID_ID_MAP = new Map();
         }
     }
 
-    replacePhantomId(record, PHANTOMID_ID_MAP) {
-        // Look for values that match keys in PHANTOMID_ID_MAP. If we found such value it means it is a link and we should
-        // replace phantom id with generated one
+    replacePhantomId(record) {
+        // Look for values that match keys in PHANTOMID_ID_MAP. If we found such value it means it is a link, and we
+        // should replace phantom id with generated one
         for (const key in record) {
-            if (!/\$Phantom/.test(key) && PHANTOMID_ID_MAP.has(record[key])) {
-                record[key] = PHANTOMID_ID_MAP.get(record[key]);
+            const value = record[key];
+
+            if (typeof value === 'string') {
+                if (!/\$Phantom/.test(key) && PHANTOMID_ID_MAP.has(value)) {
+                    record[key] = PHANTOMID_ID_MAP.get(value);
+                }
+            }
+            else if (typeof value === 'object' && !Array.isArray(value)) {
+                this.replacePhantomId(value, PHANTOMID_ID_MAP);
             }
         }
     }
 
     handleProjectChanges(projectId, changes) {
-        const ID_PHANTOMID_MAP = new Map();
-        const PHANTOMID_ID_MAP = new Map();
-
         const project = this.storage.getProject(projectId);
 
-        for (const key in changes) {
-            this.handleStoreChanges(project.data[key], changes[key], ID_PHANTOMID_MAP, PHANTOMID_ID_MAP);
-        }
+        ['calendars', 'resources', 'tasks', 'dependencies', 'assignments', 'versions', 'changelogs'].forEach(key => {
+            if (key in changes) {
+                this.handleStoreChanges(project.data[key], changes[key]);
+            }
+        });
 
         // Changes object already contains correct ids
         return { changes, hasNewRecords : PHANTOMID_ID_MAP.size !== 0 };
     }
 
-    handleStoreChanges(store, changes, ID_PHANTOMID_MAP, PHANTOMID_ID_MAP) {
-        const { added, updated = [], removed } = changes;
+    // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
+    handleStoreChanges(store, changes) {
+        if (changes.added) {
+            for (let i = 0; i < changes.added.length; i++) {
+                const record = changes.added[i];
+                const phantomId = record.$PhantomId;
 
-        for (let index = 0; index < added?.length; index++) {
-            const record = added[index];
-            // For every new record we should generate an id
-            record.id = this.storage.generateId(store.storeId);
+                // If phantom id is already processed, we should move this record to the list of updated records
+                if (PHANTOMID_ID_MAP.has(phantomId)) {
+                    record.id = PHANTOMID_ID_MAP.get(phantomId);
+                    delete record.$PhantomId;
 
-            PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
-            ID_PHANTOMID_MAP.set(record.id, record.$PhantomId);
+                    // Move record from added to updated
+                    changes.updated = changes.updated || [];
+                    changes.updated.push(record);
+                    changes.added.splice(i, 1);
 
-            // Replace phantom ids with real ones
-            this.replacePhantomId(record, PHANTOMID_ID_MAP);
+                    // Same for the $input
+                    if (changes.$input?.added) {
+                        const inputIndex = changes.$input.added.findIndex(inputRecord => inputRecord.$PhantomId === phantomId);
+                        const inputRecord = changes.$input.added[inputIndex];
 
-            // Remove extra field, we don't need it anymore
-            // delete record.$PhantomId;
-            // delete record.$PhantomParentId;
+                        inputRecord.id = record.id;
+                        delete inputRecord.$PhantomId;
+                        this.replacePhantomId(inputRecord);
 
-            store.add(record);
+                        if (inputIndex !== -1) {
+                            changes.$input.updated = changes.$input.updated || [];
+                            changes.$input.updated.push(inputRecord);
+                            changes.$input.added.splice(inputIndex, 1);
+                        }
+                    }
 
-            // Replace with version with lazy-loaded fields omitted for rebroadcast
-            added[index] = store.omitLazyFields(store.getById(record.id));
+                    i--;
+                }
+                else {
+                    record.id = this.storage.generateId(store.storeId);
+                    PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
+
+                    const inputRecord = changes.$input?.added?.find(r => r.$PhantomId === phantomId);
+
+                    if (inputRecord) {
+                        inputRecord.id = record.id;
+                        this.replacePhantomId(inputRecord);
+                    }
+                }
+
+                // Replace phantom parent id with parent id
+                if ('$PhantomParentId' in record) {
+                    record.parentId = PHANTOMID_ID_MAP[record.$PhantomParentId];
+                    // Phantom parent id is not required, on the other hand
+                    delete record.$PhantomParentId;
+                }
+
+                // Replace phantom ids with real ones
+                this.replacePhantomId(record);
+
+                // Replace with version with lazy-loaded fields omitted for rebroadcast
+                changes.added[i] = omitLazyFields(record);
+            }
         }
 
-        for (const record of updated) {
+        changes.updated?.forEach(record => {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {
                 this.replacePhantomId(record, PHANTOMID_ID_MAP);
-
-                // Copy properties
-                Object.assign(localRecord, record);
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
                 // It should not be happening
                 console.warn('Record not found in store ' + store.storeId);
             }
-        }
+        });
 
-        if (removed) {
-            store.remove(removed.map(r => r.id));
-        }
+        store.applyChangeset({ added : changes.added, updated : changes.updated, removed : changes.removed });
     }
 
     getVersionContent(projectId, versionId) {

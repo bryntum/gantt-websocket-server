@@ -26,7 +26,8 @@ class WebSocketServer extends MessageHandler {
     get address() {
         const
             options = { internal : false, ipVersion : 4 },
-            ip      = ni.toIp(ni.getInterfaces(options)[0], options);
+            ifs     = ni.getInterfaces(options),
+            ip      = ni.toIp(ifs[ifs.length - 1], options);
 
         return `ws${this.httpsServer ? 's' : ''}://${ip}:${this.port}`;
     }
@@ -113,6 +114,8 @@ class WebSocketServer extends MessageHandler {
     bindWebsocketClientListeners(ws) {
         const me = this;
 
+        ws.id = me.generateClientId();
+
         // ...start listening for messages from it
 
         me.debugLog(`New incoming connection from: ${ws._socket.remoteAddress}`);
@@ -128,7 +131,7 @@ class WebSocketServer extends MessageHandler {
 
                 const handler = this.getHandler(data.command);
 
-                handler.call(me, ws, data);
+                handler.call(me, ws, data.data, data.command);
             }
             catch (error) {
                 ws.send(JSON.stringify({ command : 'error', message : error.message + error.stack }));
@@ -142,6 +145,12 @@ class WebSocketServer extends MessageHandler {
         ws.on('close', () => {
             me.handleLogout(ws);
         });
+    }
+
+    generateClientId() {
+        this.counter = (this.counter || 0) + 1;
+
+        return `client-${this.counter}`;
     }
 
     /**
