@@ -33,6 +33,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        node-version-file: 'package.json'
         cache: 'npm'
     - run: npm ci
     - run: npm test
