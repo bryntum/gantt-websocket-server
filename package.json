@@ -10,7 +10,7 @@
   "author": "Bryntum",
   "license": "ISC",
   "dependencies": {
-    "@bryntum/gantt": "5.5.3",
+    "@bryntum/gantt": "5.6.11",
     "network-interfaces": "~1.1.0",
     "ws": "~6.1.4"
   },
