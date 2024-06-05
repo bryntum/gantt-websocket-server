@@ -14,7 +14,8 @@ class MessageHandler extends AuthorizationHandler {
             'dataset'                  : this.requireAuth(this.handleDataset),
             'project_change'           : this.requireAuth(this.requireSubscription(this.handleProjectChange)),
             'request_version_autosave' : this.requireAuth(this.requireSubscription(this.handleRequestVersionAutoSave)),
-            'load_version_content'     : this.requireAuth(this.requireSubscription(this.handleLoadVersionContent))
+            'load_version_content'     : this.requireAuth(this.requireSubscription(this.handleLoadVersionContent)),
+            'version'                  : this.handleVersion.bind(this),
         };
 
         this.dataHandler = new DataHandler();
@@ -265,6 +266,9 @@ class MessageHandler extends AuthorizationHandler {
         }));
     }
 
+    handleVersion(ws) {
+        ws.send(JSON.stringify({ command : 'version', data : { version : process.env.npm_package_version } }));
+    }
     //#endregion
 
     // When client requests dataset we subscribe him to that project updates
