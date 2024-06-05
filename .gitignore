@@ -1,2 +1,5 @@
 .idea
 node_modules
+
+# lock would include unique package signature
+package-lock.json
