@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const { AuthorizationHandler } = require('./AuthorizationHandler.js');
 const { DataHandler } = require('../datahandler.js');
+const packageConfig = require('../../package.json');
 
 class MessageHandler extends AuthorizationHandler {
     constructor(config) {
@@ -267,7 +268,7 @@ class MessageHandler extends AuthorizationHandler {
     }
 
     handleVersion(ws) {
-        ws.send(JSON.stringify({ command : 'version', data : { version : process.env.npm_package_version } }));
+        ws.send(JSON.stringify({ command : 'version', data : { version : packageConfig.version } }));
     }
     //#endregion
 
