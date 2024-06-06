@@ -3,3 +3,10 @@ node_modules
 
 # lock would include unique package signature
 package-lock.json
+
+# Utility files on the server
+cert/
+start.sh
+stop.sh
+systemd/
+update.sh
