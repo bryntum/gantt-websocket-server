@@ -33,7 +33,7 @@ class Project {
                 tasks        : new Store({ modelClass : TaskModel, tree : true, transformFlatData : true, data : data.tasks.rows }),
                 resources    : new Store({ data : data.resources.rows }),
                 dependencies : new Store({
-                    fields : ['id', 'fromTask', 'toTask', 'active', 'type', 'lag', 'lagUnit'],
+                    fields : ['id', 'fromEvent', 'toEvent', 'active', 'type', 'lag', 'lagUnit'],
                     data : data.dependencies.rows
                 }),
                 assignments  : new Store({ data : data.assignments.rows }),
