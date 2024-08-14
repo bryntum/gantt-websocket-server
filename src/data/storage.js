@@ -24,7 +24,7 @@ class Storage {
     }
 
     generateId() {
-        return ++this.counter;
+        return String(++this.counter);
     }
 
     getProject(id) {

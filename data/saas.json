@@ -25,7 +25,7 @@
     "tasks"        : {
         "rows" : [
             {
-                "id"          : 1000,
+                "id"          : "1000",
                 "name"        : "Launch SaaS Product",
                 "percentDone" : 34,
                 "startDate"   : "2019-01-14",
@@ -48,8 +48,8 @@
                 ]
             },
             {
-                "id"          : 1,
-                "parentId"    : 1000,
+                "id"          : "1",
+                "parentId"    : "1000",
                 "name"        : "Setup web server",
                 "percentDone" : 42.3,
                 "duration"    : 7,
@@ -73,8 +73,8 @@
                 ]
             },
             {
-                "id"          : 11,
-                "parentId"    : 1,
+                "id"          : "11",
+                "parentId"    : "1",
                 "name"        : "Install Apache",
                 "percentDone" : 50,
                 "startDate"   : "2019-01-14",
@@ -100,8 +100,8 @@
                 ]
             },
             {
-                "id"             : 12,
-                "parentId"       : 1,
+                "id"             : "12",
+                "parentId"       : "1",
                 "name"           : "Configure firewall",
                 "percentDone"    : 50,
                 "startDate"      : "2019-01-14",
@@ -127,8 +127,8 @@
                 ]
             },
             {
-                "id"          : 13,
-                "parentId"    : 1,
+                "id"          : "13",
+                "parentId"    : "1",
                 "name"        : "Setup load balancer",
                 "percentDone" : 50,
                 "startDate"   : "2019-01-14",
@@ -153,8 +153,8 @@
                 ]
             },
             {
-                "id"          : 14,
-                "parentId"    : 1,
+                "id"          : "14",
+                "parentId"    : "1",
                 "name"        : "Configure ports",
                 "percentDone" : 50,
                 "startDate"   : "2019-01-14",
@@ -179,8 +179,8 @@
                 ]
             },
             {
-                "id"          : 15,
-                "parentId"    : 1,
+                "id"          : "15",
+                "parentId"    : "1",
                 "name"        : "Run tests",
                 "percentDone" : 0,
                 "startDate"   : "2019-01-21",
@@ -205,8 +205,8 @@
                 ]
             },
             {
-                "id"          : 2,
-                "parentId"    : 1000,
+                "id"          : "2",
+                "parentId"    : "1000",
                 "name"        : "Website Design",
                 "percentDone" : 34,
                 "startDate"   : "2019-01-23",
@@ -230,8 +230,8 @@
                 ]
             },
             {
-                "id"          : 21,
-                "parentId"    : 2,
+                "id"          : "21",
+                "parentId"    : "2",
                 "name"        : "Contact designers",
                 "percentDone" : 70,
                 "startDate"   : "2019-01-23",
@@ -256,8 +256,8 @@
                 ]
             },
             {
-                "id"          : 22,
-                "parentId"    : 2,
+                "id"          : "22",
+                "parentId"    : "2",
                 "name"        : "Create shortlist of three designers",
                 "percentDone" : 60,
                 "startDate"   : "2019-01-30",
@@ -282,8 +282,8 @@
                 ]
             },
             {
-                "id"             : 23,
-                "parentId"       : 2,
+                "id"             : "23",
+                "parentId"       : "2",
                 "name"           : "Select & review final design",
                 "percentDone"    : 50,
                 "startDate"      : "2019-01-31",
@@ -309,8 +309,8 @@
                 ]
             },
             {
-                "id"          : 24,
-                "parentId"    : 2,
+                "id"          : "24",
+                "parentId"    : "2",
                 "name"        : "Inform management about decision",
                 "percentDone" : 100,
                 "startDate"   : "2019-02-04",
@@ -334,8 +334,8 @@
                 ]
             },
             {
-                "id"          : 25,
-                "parentId"    : 2,
+                "id"          : "25",
+                "parentId"    : "2",
                 "name"        : "Apply design to web site",
                 "percentDone" : 0,
                 "startDate"   : "2019-02-04",
@@ -360,8 +360,8 @@
                 ]
             },
             {
-                "id"          : 3,
-                "parentId"    : 1000,
+                "id"          : "3",
+                "parentId"    : "1000",
                 "name"        : "Setup Test Strategy",
                 "percentDone" : 14.5,
                 "startDate"   : "2019-01-14",
@@ -384,8 +384,8 @@
                 ]
             },
             {
-                "id"          : 31,
-                "parentId"    : 3,
+                "id"          : "31",
+                "parentId"    : "3",
                 "name"        : "Hire QA staff",
                 "percentDone" : 40,
                 "startDate"   : "2019-01-14",
@@ -409,8 +409,8 @@
                 ]
             },
             {
-                "id"          : 33,
-                "parentId"    : 3,
+                "id"          : "33",
+                "parentId"    : "3",
                 "name"        : "Write test specs",
                 "percentDone" : 9.6,
                 "duration"    : 10,
@@ -434,8 +434,8 @@
                 ]
             },
             {
-                "id"             : 331,
-                "parentId"       : 33,
+                "id"             : "331",
+                "parentId"       : "33",
                 "name"           : "Unit tests",
                 "percentDone"    : 20,
                 "startDate"      : "2019-01-21",
@@ -460,8 +460,8 @@
                 ]
             },
             {
-                "id"             : 332,
-                "parentId"       : 33,
+                "id"             : "332",
+                "parentId"       : "33",
                 "name"           : "UI unit tests / individual screens",
                 "percentDone"    : 10,
                 "startDate"      : "2019-01-21",
@@ -486,8 +486,8 @@
                 ]
             },
             {
-                "id"          : 333,
-                "parentId"    : 33,
+                "id"          : "333",
+                "parentId"    : "33",
                 "name"        : "Application tests",
                 "percentDone" : 0,
                 "startDate"   : "2019-01-21",
@@ -511,8 +511,8 @@
                 ]
             },
             {
-                "id"          : 334,
-                "parentId"    : 33,
+                "id"          : "334",
+                "parentId"    : "33",
                 "name"        : "Monkey tests",
                 "percentDone" : 0,
                 "startDate"   : "2019-01-21",
@@ -536,8 +536,8 @@
                 ]
             },
             {
-                "id"          : 4,
-                "parentId"    : 1000,
+                "id"          : "4",
+                "parentId"    : "1000",
                 "name"        : "Application Implementation",
                 "percentDone" : 39.3,
                 "startDate"   : "2019-02-04",
@@ -560,8 +560,8 @@
                 ]
             },
             {
-                "id"          : 400,
-                "parentId"    : 4,
+                "id"          : "400",
+                "parentId"    : "4",
                 "name"        : "Phase #1",
                 "expanded"    : true,
                 "duration"    : 7,
@@ -584,8 +584,8 @@
                 ]
             },
             {
-                "id"          : 41,
-                "parentId"    : 400,
+                "id"          : "41",
+                "parentId"    : "400",
                 "name"        : "Authentication module",
                 "percentDone" : 100,
                 "duration"    : 5,
@@ -609,8 +609,8 @@
                 ]
             },
             {
-                "id"          : 42,
-                "parentId"    : 400,
+                "id"          : "42",
+                "parentId"    : "400",
                 "name"        : "Single sign on",
                 "percentDone" : 100,
                 "duration"    : 3,
@@ -634,8 +634,8 @@
                 ]
             },
             {
-                "id"          : 43,
-                "parentId"    : 400,
+                "id"          : "43",
+                "parentId"    : "400",
                 "name"        : "Implement role based access",
                 "percentDone" : 0,
                 "duration"    : 4,
@@ -659,8 +659,8 @@
                 ]
             },
             {
-                "id"             : 44,
-                "parentId"       : 400,
+                "id"             : "44",
+                "parentId"       : "400",
                 "name"           : "Basic test coverage",
                 "showInTimeline" : true,
                 "cls"            : "important",
@@ -686,8 +686,8 @@
                 ]
             },
             {
-                "id"          : 45,
-                "parentId"    : 400,
+                "id"          : "45",
+                "parentId"    : "400",
                 "name"        : "Verify high test coverage",
                 "percentDone" : 0,
                 "duration"    : 2,
@@ -711,8 +711,8 @@
                 ]
             },
             {
-                "id"             : 46,
-                "parentId"       : 400,
+                "id"             : "46",
+                "parentId"       : "400",
                 "name"           : "Make backup",
                 "percentDone"    : 0,
                 "duration"       : 0,
@@ -738,8 +738,8 @@
                 ]
             },
             {
-                "id"          : 401,
-                "parentId"    : 4,
+                "id"          : "401",
+                "parentId"    : "4",
                 "name"        : "Phase #2",
                 "expanded"    : true,
                 "duration"    : 21,
@@ -762,8 +762,8 @@
                 ]
             },
             {
-                "id"          : 4011,
-                "parentId"    : 401,
+                "id"          : "4011",
+                "parentId"    : "401",
                 "name"        : "Authentication module",
                 "percentDone" : 70,
                 "duration"    : 15,
@@ -787,8 +787,8 @@
                 ]
             },
             {
-                "id"          : 4012,
-                "parentId"    : 401,
+                "id"          : "4012",
+                "parentId"    : "401",
                 "name"        : "Single sign on",
                 "percentDone" : 60,
                 "duration"    : 5,
@@ -812,8 +812,8 @@
                 ]
             },
             {
-                "id"          : 4013,
-                "parentId"    : 401,
+                "id"          : "4013",
+                "parentId"    : "401",
                 "name"        : "Implement role based access",
                 "percentDone" : 50,
                 "duration"    : 21,
@@ -837,8 +837,8 @@
                 ]
             },
             {
-                "id"          : 4014,
-                "parentId"    : 401,
+                "id"          : "4014",
+                "parentId"    : "401",
                 "name"        : "Basic test coverage",
                 "percentDone" : 0,
                 "duration"    : 20,
@@ -862,8 +862,8 @@
                 ]
             },
             {
-                "id"          : 4015,
-                "parentId"    : 401,
+                "id"          : "4015",
+                "parentId"    : "401",
                 "name"        : "Verify high test coverage",
                 "percentDone" : 0,
                 "duration"    : 4,
@@ -887,8 +887,8 @@
                 ]
             },
             {
-                "id"          : 402,
-                "parentId"    : 4,
+                "id"          : "402",
+                "parentId"    : "4",
                 "name"        : "Acceptance phase",
                 "expanded"    : true,
                 "startDate"   : "2019-03-12",
@@ -911,8 +911,8 @@
                 ]
             },
             {
-                "id"          : 4031,
-                "parentId"    : 402,
+                "id"          : "4031",
+                "parentId"    : "402",
                 "name"        : "Company bug bash",
                 "percentDone" : 70,
                 "duration"    : 3,
@@ -936,8 +936,8 @@
                 ]
             },
             {
-                "id"          : 4032,
-                "parentId"    : 402,
+                "id"          : "4032",
+                "parentId"    : "402",
                 "name"        : "Test all web pages",
                 "percentDone" : 60,
                 "duration"    : 2,
@@ -961,8 +961,8 @@
                 ]
             },
             {
-                "id"          : 4033,
-                "parentId"    : 402,
+                "id"          : "4033",
+                "parentId"    : "402",
                 "name"        : "Verify no broken links",
                 "percentDone" : 50,
                 "duration"    : 4,
@@ -986,8 +986,8 @@
                 ]
             },
             {
-                "id"          : 4034,
-                "parentId"    : 402,
+                "id"          : "4034",
+                "parentId"    : "402",
                 "name"        : "Make test release",
                 "percentDone" : 0,
                 "duration"    : 3,
@@ -1011,8 +1011,8 @@
                 ]
             },
             {
-                "id"          : 4035,
-                "parentId"    : 402,
+                "id"          : "4035",
+                "parentId"    : "402",
                 "name"        : "Send invitation email",
                 "percentDone" : 0,
                 "duration"    : 0,
@@ -1036,8 +1036,8 @@
                 ]
             },
             {
-                "id"          : 4036,
-                "parentId"    : 402,
+                "id"          : "4036",
+                "parentId"    : "402",
                 "name"        : "Celebrate launch",
                 "iconCls"     : "b-fa b-fa-glass-cheers",
                 "percentDone" : 0,
@@ -1066,185 +1066,185 @@
     "dependencies" : {
         "rows" : [
             {
-                "id"       : 1,
-                "fromEvent" : 11,
-                "toEvent"   : 15,
+                "id"       : "1",
+                "fromEvent" : "11",
+                "toEvent"   : "15",
                 "lag"      : 2
             },
             {
-                "id"       : 2,
-                "fromEvent" : 12,
-                "toEvent"   : 15
+                "id"       : "2",
+                "fromEvent" : "12",
+                "toEvent"   : "15"
             },
             {
-                "id"       : 3,
-                "fromEvent" : 13,
-                "toEvent"   : 15
+                "id"       : "3",
+                "fromEvent" : "13",
+                "toEvent"   : "15"
             },
             {
-                "id"       : 4,
-                "fromEvent" : 14,
-                "toEvent"   : 15
+                "id"       : "4",
+                "fromEvent" : "14",
+                "toEvent"   : "15"
             },
             {
-                "id"       : 5,
-                "fromEvent" : 15,
-                "toEvent"   : 21
+                "id"       : "5",
+                "fromEvent" : "15",
+                "toEvent"   : "21"
             },
             {
-                "id"       : 7,
-                "fromEvent" : 21,
-                "toEvent"   : 22
+                "id"       : "7",
+                "fromEvent" : "21",
+                "toEvent"   : "22"
             },
             {
-                "id"       : 8,
-                "fromEvent" : 22,
-                "toEvent"   : 23
+                "id"       : "8",
+                "fromEvent" : "22",
+                "toEvent"   : "23"
             },
             {
-                "id"       : 9,
-                "fromEvent" : 23,
-                "toEvent"   : 24
+                "id"       : "9",
+                "fromEvent" : "23",
+                "toEvent"   : "24"
             },
             {
-                "id"       : 10,
-                "fromEvent" : 24,
-                "toEvent"   : 25
+                "id"       : "10",
+                "fromEvent" : "24",
+                "toEvent"   : "25"
             },
             {
-                "id"       : 11,
-                "fromEvent" : 31,
-                "toEvent"   : 331
+                "id"       : "11",
+                "fromEvent" : "31",
+                "toEvent"   : "331"
             },
             {
-                "id"       : 111,
-                "fromEvent" : 31,
-                "toEvent"   : 332
+                "id"       : "111",
+                "fromEvent" : "31",
+                "toEvent"   : "332"
             },
             {
-                "id"       : 112,
-                "fromEvent" : 31,
-                "toEvent"   : 333
+                "id"       : "112",
+                "fromEvent" : "31",
+                "toEvent"   : "333"
             },
             {
-                "id"       : 113,
-                "fromEvent" : 31,
-                "toEvent"   : 334
+                "id"       : "113",
+                "fromEvent" : "31",
+                "toEvent"   : "334"
             },
             {
-                "id"       : 12,
-                "fromEvent" : 400,
-                "toEvent"   : 401
+                "id"       : "12",
+                "fromEvent" : "400",
+                "toEvent"   : "401"
             },
             {
-                "id"       : 13,
-                "fromEvent" : 401,
-                "toEvent"   : 402
+                "id"       : "13",
+                "fromEvent" : "401",
+                "toEvent"   : "402"
             },
             {
-                "id"       : 15,
-                "fromEvent" : 3,
-                "toEvent"   : 4
+                "id"       : "15",
+                "fromEvent" : "3",
+                "toEvent"   : "4"
             },
             {
-                "id"       : 16,
-                "fromEvent" : 41,
-                "toEvent"   : 45
+                "id"       : "16",
+                "fromEvent" : "41",
+                "toEvent"   : "45"
             },
             {
-                "id"       : 17,
-                "fromEvent" : 42,
-                "toEvent"   : 45
+                "id"       : "17",
+                "fromEvent" : "42",
+                "toEvent"   : "45"
             },
             {
-                "id"       : 18,
-                "fromEvent" : 43,
-                "toEvent"   : 45
+                "id"       : "18",
+                "fromEvent" : "43",
+                "toEvent"   : "45"
             },
             {
-                "id"       : 19,
-                "fromEvent" : 44,
-                "toEvent"   : 45
+                "id"       : "19",
+                "fromEvent" : "44",
+                "toEvent"   : "45"
             },
             {
-                "id"       : 20,
-                "fromEvent" : 4034,
-                "toEvent"   : 4035
+                "id"       : "20",
+                "fromEvent" : "4034",
+                "toEvent"   : "4035"
             },
             {
-                "id"       : 21,
-                "fromEvent" : 4035,
-                "toEvent"   : 4036
+                "id"       : "21",
+                "fromEvent" : "4035",
+                "toEvent"   : "4036"
             }
         ]
     },
     "resources"    : {
         "rows" : [
             {
-                "id"       : 1,
+                "id"       : "1",
                 "name"     : "Celia",
                 "city"     : "Barcelona",
                 "calendar" : null,
                 "image"    : "celia.jpg"
             },
             {
-                "id"       : 2,
+                "id"       : "2",
                 "name"     : "Lee",
                 "city"     : "London",
                 "calendar" : null,
                 "image"    : "lee.jpg"
             },
             {
-                "id"       : 3,
+                "id"       : "3",
                 "name"     : "Macy",
                 "city"     : "New York",
                 "calendar" : null,
                 "image"    : "macy.jpg"
             },
             {
-                "id"       : 4,
+                "id"       : "4",
                 "name"     : "Madison",
                 "city"     : "Barcelona",
                 "calendar" : null,
                 "image"    : "madison.jpg"
             },
             {
-                "id"       : 5,
+                "id"       : "5",
                 "name"     : "Rob",
                 "city"     : "Rome",
                 "calendar" : "business",
                 "image"    : "rob.jpg"
             },
             {
-                "id"       : 6,
+                "id"       : "6",
                 "name"     : "Dave",
                 "city"     : "Barcelona",
                 "calendar" : "night",
                 "image"    : "dave.jpg"
             },
             {
-                "id"       : 7,
+                "id"       : "7",
                 "name"     : "Dan",
                 "city"     : "London",
                 "calendar" : "night",
                 "image"    : "dan.jpg"
             },
             {
-                "id"       : 8,
+                "id"       : "8",
                 "name"     : "George",
                 "city"     : "New York",
                 "calendar" : null,
                 "image"    : "george.jpg"
             },
             {
-                "id"       : 9,
+                "id"       : "9",
                 "name"     : "Gloria",
                 "city"     : "Rome",
                 "calendar" : null,
                 "image"    : "gloria.jpg"
             },
             {
-                "id"       : 10,
+                "id"       : "10",
                 "name"     : "Henrik",
                 "city"     : "London",
                 "calendar" : null,
@@ -1255,116 +1255,116 @@
     "assignments"  : {
         "rows" : [
             {
-                "id"       : 1,
-                "event"    : 11,
-                "resource" : 1
+                "id"       : "1",
+                "event"    : "11",
+                "resource" : "1"
             },
             {
-                "id"       : 2,
-                "event"    : 12,
-                "resource" : 2
+                "id"       : "2",
+                "event"    : "12",
+                "resource" : "2"
             },
             {
-                "id"       : 3,
-                "event"    : 13,
-                "resource" : 3
+                "id"       : "3",
+                "event"    : "13",
+                "resource" : "3"
             },
             {
-                "id"       : 4,
-                "event"    : 14,
-                "resource" : 3
+                "id"       : "4",
+                "event"    : "14",
+                "resource" : "3"
             },
             {
-                "id"       : 5,
-                "event"    : 15,
-                "resource" : 4
+                "id"       : "5",
+                "event"    : "15",
+                "resource" : "4"
             },
             {
-                "id"       : 6,
-                "event"    : 15,
-                "resource" : 5
+                "id"       : "6",
+                "event"    : "15",
+                "resource" : "5"
             },
             {
-                "id"       : 7,
-                "event"    : 21,
-                "resource" : 1
+                "id"       : "7",
+                "event"    : "21",
+                "resource" : "1"
             },
             {
-                "id"       : 8,
-                "event"    : 22,
-                "resource" : 2
+                "id"       : "8",
+                "event"    : "22",
+                "resource" : "2"
             },
             {
-                "id"       : 9,
-                "event"    : 23,
-                "resource" : 3
+                "id"       : "9",
+                "event"    : "23",
+                "resource" : "3"
             },
             {
-                "id"       : 10,
-                "event"    : 24,
-                "resource" : 3
+                "id"       : "10",
+                "event"    : "24",
+                "resource" : "3"
             },
             {
-                "id"       : 11,
-                "event"    : 25,
-                "resource" : 6
+                "id"       : "11",
+                "event"    : "25",
+                "resource" : "6"
             },
             {
-                "id"       : 12,
-                "event"    : 31,
-                "resource" : 7
+                "id"       : "12",
+                "event"    : "31",
+                "resource" : "7"
             },
             {
-                "id"       : 13,
-                "event"    : 331,
-                "resource" : 6
+                "id"       : "13",
+                "event"    : "331",
+                "resource" : "6"
             },
             {
-                "id"       : 14,
-                "event"    : 332,
-                "resource" : 6
+                "id"       : "14",
+                "event"    : "332",
+                "resource" : "6"
             },
             {
-                "id"       : 15,
-                "event"    : 333,
-                "resource" : 7
+                "id"       : "15",
+                "event"    : "333",
+                "resource" : "7"
             },
             {
-                "id"       : 16,
-                "event"    : 334,
-                "resource" : 8
+                "id"       : "16",
+                "event"    : "334",
+                "resource" : "8"
             },
             {
-                "id"       : 17,
-                "event"    : 400,
-                "resource" : 7
+                "id"       : "17",
+                "event"    : "400",
+                "resource" : "7"
             },
             {
-                "id"       : 18,
-                "event"    : 41,
-                "resource" : 8
+                "id"       : "18",
+                "event"    : "41",
+                "resource" : "8"
             },
             {
-                "id"       : 19,
-                "event"    : 42,
-                "resource" : 9
+                "id"       : "19",
+                "event"    : "42",
+                "resource" : "9"
             },
             {
-                "id"       : 20,
-                "event"    : 43,
-                "resource" : 10
+                "id"       : "20",
+                "event"    : "43",
+                "resource" : "10"
             },
             {
-                "id"       : 21,
-                "event"    : 43,
-                "resource" : 1
+                "id"       : "21",
+                "event"    : "43",
+                "resource" : "1"
             }
         ]
     },
     "timeRanges"   : {
         "rows" : [
             {
-                "id"           : 1,
+                "id"           : "1",
                 "name"         : "Important date",
                 "startDate"    : "2019-01-30",
                 "duration"     : 0,

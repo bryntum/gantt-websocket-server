@@ -52,13 +52,15 @@ class DataHandler {
                 }
             }
             else if (typeof value === 'object' && !Array.isArray(value)) {
-                this.replacePhantomId(value, PHANTOMID_ID_MAP);
+                this.replacePhantomId(value);
             }
         }
     }
 
     handleProjectChanges(projectId, changes) {
         const project = this.storage.getProject(projectId);
+
+        PHANTOMID_ID_MAP = new Map();
 
         ['calendars', 'resources', 'tasks', 'dependencies', 'assignments', 'versions', 'changelogs'].forEach(key => {
             if (key in changes) {
