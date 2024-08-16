@@ -12,42 +12,42 @@
     "tasks"        : {
         "rows" : [
             {
-                "id" :" 1",
+                "id": "tasks-1",
                 "name": "Launch website",
                 "expanded": true,
                 "children": [
                     {
-                        "id": "11",
+                        "id": "tasks-11",
                         "name": "Create design",
                         "duration": 3
                     },
                     {
-                        "id": "12",
+                        "id": "tasks-12",
                         "name": "Create markup",
                         "duration": 5
                     },
                     {
-                        "id": "13",
+                        "id": "tasks-13",
                         "name": "Create SSL Certificate",
                         "duration": 1
                     },
                     {
-                        "id": "14",
+                        "id": "tasks-14",
                         "name": "Deploy to staging",
                         "duration": 1
                     },
                     {
-                        "id": "15",
+                        "id": "tasks-15",
                         "name": "Test staging",
                         "duration": 5
                     },
                     {
-                        "id": "16",
+                        "id": "tasks-16",
                         "name": "Deploy to production",
                         "duration": 1
                     },
                     {
-                        "id": "17",
+                        "id": "tasks-17",
                         "name": "Test production",
                         "duration": 5
                     }
@@ -58,34 +58,34 @@
     "dependencies" : {
         "rows" : [
             {
-                "id": "1",
-                "from": "11",
-                "to": "12"
+                "id": "dependencies-1",
+                "from": "events-11",
+                "to": "events-12"
             },
             {
-                "id": "2",
-                "from": "12",
-                "to": "14"
+                "id": "dependencies-2",
+                "from": "events-12",
+                "to": "events-14"
             },
             {
-                "id": "3",
-                "from": "13",
-                "to": "14"
+                "id": "dependencies-3",
+                "from": "events-13",
+                "to": "events-14"
             },
             {
-                "id": "4",
-                "from": "14",
-                "to": "15"
+                "id": "dependencies-4",
+                "from": "events-14",
+                "to": "events-15"
             },
             {
-                "id": "5",
-                "from": "15",
-                "to": "16"
+                "id": "dependencies-5",
+                "from": "events-15",
+                "to": "events-16"
             },
             {
-                "id": "6",
-                "from": "16",
-                "to": "17"
+                "id": "dependencies-6",
+                "from": "events-16",
+                "to": "events-17"
             }
         ]
     },

@@ -30,16 +30,17 @@ class Project {
             const data = JSON.parse(fs.readFileSync(this.source));
 
             this.data = {
-                tasks        : new Store({ modelClass : TaskModel, tree : true, transformFlatData : true, data : data.tasks.rows }),
-                resources    : new Store({ data : data.resources.rows }),
+                tasks        : new Store({ id : 'events', modelClass : TaskModel, tree : true, transformFlatData : true, data : data.tasks.rows }),
+                resources    : new Store({ id : 'resources', data : data.resources.rows }),
                 dependencies : new Store({
+                    id : 'dependencies',
                     fields : ['id', 'fromEvent', 'toEvent', 'active', 'type', 'lag', 'lagUnit'],
                     data : data.dependencies.rows
                 }),
-                assignments  : new Store({ data : data.assignments.rows }),
-                calendars    : new Store({ data : data.calendars.rows }),
-                versions     : new Store({ data : data.versions.rows, modelClass : ModelWithLazyFields }),
-                changelogs   : new Store({ data : [] }),
+                assignments  : new Store({ id : 'assignments', data : data.assignments.rows }),
+                calendars    : new Store({ id : 'calendars', data : data.calendars.rows }),
+                versions     : new Store({ id : 'versions', data : data.versions.rows, modelClass : ModelWithLazyFields }),
+                changelogs   : new Store({ id : 'changelogs', data : [] }),
                 project      : data.project
             };
         }

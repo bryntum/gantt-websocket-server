@@ -23,8 +23,8 @@ class Storage {
         this.getProject(id)?.load();
     }
 
-    generateId() {
-        return String(++this.counter);
+    generateId(storeId) {
+        return `${storeId}-${++this.counter}`;
     }
 
     getProject(id) {
