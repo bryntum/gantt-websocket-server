@@ -60,7 +60,7 @@ class DataHandler {
     handleProjectChanges(projectId, changes) {
         const project = this.storage.getProject(projectId);
 
-        PHANTOMID_ID_MAP = new Map();
+        const initialSize = PHANTOMID_ID_MAP.size;
 
         ['calendars', 'resources', 'tasks', 'dependencies', 'assignments', 'versions', 'changelogs'].forEach(key => {
             if (key in changes) {
@@ -69,7 +69,7 @@ class DataHandler {
         });
 
         // Changes object already contains correct ids
-        return { changes, hasNewRecords : PHANTOMID_ID_MAP.size !== 0 };
+        return { changes, hasNewRecords : PHANTOMID_ID_MAP.size !== initialSize };
     }
 
     // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
