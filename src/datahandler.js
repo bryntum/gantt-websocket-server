@@ -121,7 +121,7 @@ class DataHandler {
 
                 // Replace phantom parent id with parent id
                 if ('$PhantomParentId' in record) {
-                    record.parentId = PHANTOMID_ID_MAP[record.$PhantomParentId];
+                    record.parentId = PHANTOMID_ID_MAP.get(record.$PhantomParentId);
                     // Phantom parent id is not required, on the other hand
                     delete record.$PhantomParentId;
                 }
