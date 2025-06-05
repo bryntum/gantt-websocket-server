@@ -62,6 +62,14 @@ class DataHandler {
 
         const initialSize = PHANTOMID_ID_MAP.size;
 
+        if ('project' in changes) {
+            for (const key in changes.project) {
+                if (key !== '$input') {
+                    project.data.project[key] = changes.project[key];
+                }
+            }
+        }
+
         ['calendars', 'resources', 'tasks', 'dependencies', 'assignments', 'versions', 'changelogs'].forEach(key => {
             if (key in changes) {
                 this.handleStoreChanges(project.data[key], changes[key]);
@@ -94,11 +102,11 @@ class DataHandler {
                         const inputIndex = changes.$input.added.findIndex(inputRecord => inputRecord.$PhantomId === phantomId);
                         const inputRecord = changes.$input.added[inputIndex];
 
-                        inputRecord.id = record.id;
-                        delete inputRecord.$PhantomId;
-                        this.replacePhantomId(inputRecord);
-
                         if (inputIndex !== -1) {
+                            inputRecord.id = record.id;
+                            delete inputRecord.$PhantomId;
+                            this.replacePhantomId(inputRecord);
+
                             changes.$input.updated = changes.$input.updated || [];
                             changes.$input.updated.push(inputRecord);
                             changes.$input.added.splice(inputIndex, 1);
