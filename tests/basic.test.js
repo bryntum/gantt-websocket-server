@@ -91,22 +91,22 @@ test('Should generate ids for new records', async () => {
                     client        : ws.clientId,
                     changes       : {
                         tasks        : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(String) })]
                         },
                         resources    : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(String) })]
                         },
                         dependencies : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(String) })]
                         },
                         assignments  : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(String) })]
                         },
                         versions     : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(String) })]
                         },
                         changelogs   : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(String) })]
                         }
                     }
                 }
@@ -175,22 +175,22 @@ test('Should broadcast ids for new records among clients', async () => {
                     client        : ws.clientId,
                     changes       : {
                         tasks        : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec1', id : expect.any(String) })]
                         },
                         resources    : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec2', id : expect.any(String) })]
                         },
                         dependencies : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec3', id : expect.any(String) })]
                         },
                         assignments  : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec4', id : expect.any(String) })]
                         },
                         versions     : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec5', id : expect.any(String) })]
                         },
                         changelogs   : {
-                            added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : 'newrec6', id : expect.any(String) })]
                         }
                     }
                 }
@@ -228,9 +228,9 @@ test('Should get dataset from server', async () => {
             name : expect.any(String)
         })]),
         dependenciesData : expect.arrayContaining([expect.objectContaining({
-            id       : expect.anything(),
-            fromTask : expect.anything(),
-            toTask   : expect.anything()
+            id        : expect.anything(),
+            fromEvent : expect.anything(),
+            toEvent   : expect.anything()
         })]),
         assignmentsData  : expect.arrayContaining([expect.objectContaining({
             id       : expect.anything(),
@@ -314,7 +314,7 @@ test('New clients should receive existing versions', async () => {
 
     expect(dataset).toEqual(expect.objectContaining({
         versionsData : expect.arrayContaining([expect.objectContaining({
-            id      : expect.any(Number),
+            id      : expect.any(String),
             savedAt : expect.any(String),
             name    : expect.any(String)
         })])
@@ -433,16 +433,21 @@ test('Should not send version content by default on dataset command', async () =
 
     await awaitNextCommand(ws, 'project_change', {
         command : 'project_change',
-        project : 1,
-        changes : {
-            versions     : {
-                added : [{
-                    $PhantomId : 'newrec1',
-                    name       : 'Version 1',
-                    savedAt    : '2022-09-08T14:09:29.180Z',
-                    content    : versionContent
-                }]
-            }
+        data    : {
+            project   : 1,
+            revisions : [{
+                revision : 'local-1',
+                changes  : {
+                    versions : {
+                        added : [{
+                            $PhantomId : 'newrec1',
+                            name       : 'Version 1',
+                            savedAt    : '2022-09-08T14:09:29.180Z',
+                            content    : versionContent
+                        }]
+                    }
+                }
+            }]
         }
     });
 
@@ -451,7 +456,7 @@ test('Should not send version content by default on dataset command', async () =
     const client2Dataset = await awaitDataset(ws2, 1);
 
     // New client shouldn't get version content
-    client2Dataset.dataset.versionsData.forEach(version => {
+    client2Dataset.data.dataset.versionsData.forEach(version => {
         expect(version.content).toBeUndefined();
     });
 

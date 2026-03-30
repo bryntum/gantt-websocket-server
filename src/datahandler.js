@@ -86,6 +86,9 @@ class DataHandler {
 
     // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
     handleStoreChanges(store, changes) {
+        // Keep full records for store application, strip lazy fields only for rebroadcast
+        const addedForStore = [];
+
         if (changes.added) {
             for (let i = 0; i < changes.added.length; i++) {
                 const record = changes.added[i];
@@ -120,7 +123,7 @@ class DataHandler {
                     i--;
                 }
                 else {
-                    record.id = this.storage.generateId(store.storeId);
+                    record.id = this.storage.generateId(store.id);
                     PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
 
                     const inputRecord = changes.$input?.added?.find(r => r.$PhantomId === phantomId);
@@ -141,7 +144,8 @@ class DataHandler {
                 // Replace phantom ids with real ones
                 this.replacePhantomId(record);
 
-                // Replace with version with lazy-loaded fields omitted for rebroadcast
+                // Keep full record for store, omit lazy fields for rebroadcast
+                addedForStore.push(record);
                 changes.added[i] = omitLazyFields(record);
             }
         }
@@ -155,11 +159,12 @@ class DataHandler {
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
                 // It should not be happening
-                console.warn('Record not found in store ' + store.storeId);
+                console.warn('Record not found in store ' + store.id);
             }
         });
 
-        store.applyChangeset({ added : changes.added, updated : changes.updated, removed : changes.removed });
+        // Apply changeset with full records (including lazy fields like content)
+        store.applyChangeset({ added : addedForStore.length ? addedForStore : changes.added, updated : changes.updated, removed : changes.removed });
     }
 
     getVersionContent(projectId, versionId) {

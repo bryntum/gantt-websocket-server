@@ -17,7 +17,7 @@ test('Changes should be persisted and served to new clients', async () => {
 
     expect(got).not.toBeUndefined();
 
-    await awaitNextCommand(ws1, 'project_change', {
+    const response = await awaitNextCommand(ws1, 'project_change', {
         command : 'project_change',
         data    : {
             project   : 1,
@@ -26,15 +26,20 @@ test('Changes should be persisted and served to new clients', async () => {
                     revision : 'local-1',
                     changes  : {
                         tasks : {
-                            added   : [{ id : 101, name : 'Task 1.6', parentId : 1 }],
-                            updated : [{ id : 12, parentId : 11 }, { id : 13, percentDone : 0 }],
-                            removed : [{ id : 21 }]
+                            added   : [{ $PhantomId : 'persist-1', name : 'Task 1.6', parentId : 'events-1' }],
+                            updated : [{ id : 'events-12', parentId : 'events-11' }, { id : 'events-13', percentDone : 0 }],
+                            removed : [{ id : 'events-21' }]
                         }
                     }
                 }
             ]
         }
     });
+
+    // Get the generated ID for the new task
+    const newTaskId = response.data.revisions[0].changes.tasks.added[0].id;
+
+    expect(newTaskId).toEqual(expect.any(String));
 
     const ws2 = new WebSocket(server.address);
 
@@ -45,12 +50,12 @@ test('Changes should be persisted and served to new clients', async () => {
     const store = new TaskStore({ data : data.dataset.tasksData });
 
     // child added
-    expect(store.getById(11).children.length).toBe(1);
+    expect(store.getById('events-11').children.length).toBe(1);
     // record removed
-    expect(store.getById(21)).toBeUndefined();
+    expect(store.getById('events-21')).toBeUndefined();
     // new task is ok
-    expect(store.getById(101).parent.id).toBe(1);
-    expect(store.getById(13).percentDone).toBe(0);
+    expect(store.getById(newTaskId).parent.id).toBe('events-1');
+    expect(store.getById('events-13').percentDone).toBe(0);
 
     ws1.terminate();
     ws2.terminate();

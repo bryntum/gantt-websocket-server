@@ -56,7 +56,7 @@ test('Should respond to client if task was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         tasks        : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         },
                         resources    : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -119,9 +119,9 @@ test('Should respond to client if new task was updated', async () => {
                     changes       : {
                         tasks        : {
                             $input : {
-                                added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                                added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                             },
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         }
                     }
                 }
@@ -167,9 +167,9 @@ test('Should respond to client if new task was updated', async () => {
                     changes       : {
                         tasks        : {
                             $input : {
-                                added : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                                added : [expect.objectContaining({ id : expect.any(String), name : 'a' })]
                             },
-                            added : [expect.objectContaining({ id : expect.any(Number), name : 'a' })]
+                            added : [expect.objectContaining({ id : expect.any(String), name : 'a' })]
                         }
                     }
                 }
@@ -231,7 +231,7 @@ test('Should respond to client if resource was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         resources    : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         },
                         dependencies : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -302,7 +302,7 @@ test('Should respond to client if dependency was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         dependencies : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         },
                         assignments  : {
                             updated : [expect.objectContaining({ id : 1 })]
@@ -373,7 +373,7 @@ test('Should respond to client if assignment was added', async () => {
                             updated : [expect.objectContaining({ id : 1 })]
                         },
                         assignments  : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         }
                     }
                 }
@@ -423,7 +423,7 @@ test('Should respond to client if version was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         versions : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         }
                     }
                 }
@@ -473,7 +473,7 @@ test('Should respond to client if changelog was added', async () => {
                     client        : ws.clientId,
                     changes       : {
                         changelogs : {
-                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(Number) })]
+                            added : [expect.objectContaining({ $PhantomId : phantomId, id : expect.any(String) })]
                         }
                     }
                 }

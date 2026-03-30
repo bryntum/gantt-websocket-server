@@ -261,9 +261,7 @@ class MessageHandler extends AuthorizationHandler {
 
         ws.send(JSON.stringify({
             command : 'load_version_content',
-            project,
-            versionId,
-            content
+            data    : { project, versionId, content }
         }));
     }
 
