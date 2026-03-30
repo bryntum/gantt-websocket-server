@@ -30,6 +30,10 @@ class DataHandler {
         return this.storage.getProjectsMetadata(ids);
     }
 
+    get phantomIdMap() {
+        return PHANTOMID_ID_MAP;
+    }
+
     reset(id) {
         if (id != null) {
             this.storage.reset(id);

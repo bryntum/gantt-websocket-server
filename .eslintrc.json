@@ -19,6 +19,12 @@
       "env": {
         "jest": true
       }
+    },
+    {
+      "files": ["src/ui/**"],
+      "env": {
+        "browser": true
+      }
     }
   ]
 }

@@ -1,9 +1,12 @@
 const
-    fs                 = require('fs'),
-    https              = require('https'),
-    WebSocket          = require('ws'),
-    ni                 = require('network-interfaces'),
-    { MessageHandler } = require('./server/MessageHandler.js');
+    fs                  = require('fs'),
+    http                = require('http'),
+    https               = require('https'),
+    WebSocket           = require('ws'),
+    ni                  = require('network-interfaces'),
+    { MessageHandler }  = require('./server/MessageHandler.js'),
+    { MessageLogger }   = require('./server/MessageLogger.js'),
+    { HttpHandler }     = require('./server/HttpHandler.js');
 
 
 class WebSocketServer extends MessageHandler {
@@ -12,14 +15,18 @@ class WebSocketServer extends MessageHandler {
 
         this.wss = null;
         this.port = 8080;
+        this.httpServer = null;
         this.httpsServer = null;
         this.lastActionTime = 0;
+        this.messageLogger = new MessageLogger();
+        this.httpHandler = new HttpHandler(this);
 
         Object.assign(this, config);
     }
 
     destroy() {
         this.wss.close();
+        this.httpServer?.close();
         this.httpsServer?.close();
     }
 
@@ -29,7 +36,9 @@ class WebSocketServer extends MessageHandler {
             ifs     = ni.getInterfaces(options),
             ip      = ni.toIp(ifs[ifs.length - 1], options);
 
-        return `ws${this.httpsServer ? 's' : ''}://${ip}:${this.port}`;
+        const protocol = this.httpsServer ? 'wss' : 'ws';
+
+        return `${protocol}://${ip}:${this.port}`;
     }
 
     /**
@@ -47,21 +56,24 @@ class WebSocketServer extends MessageHandler {
             if (port < 65535) {
                 const options = {};
 
+                const requestHandler = (req, res) => me.httpHandler.handleRequest(req, res);
+
                 // load SSL certificate
                 if (fs.existsSync('cert/key.pem') && fs.existsSync('cert/cert.pem')) {
                     options.key  = fs.readFileSync('cert/key.pem', 'utf8');
                     options.cert = fs.readFileSync('cert/cert.pem', 'utf8');
 
-                    httpsServer = https.createServer(options, (req, res) => {
-                        // Simple server response
-                        res.writeHead(200);
-                        res.end('Https server is online\n');
-                    }).listen(port);
+                    httpsServer = https.createServer(options, requestHandler).listen(port);
 
                     wss = new WebSocket.Server({ server : httpsServer });
                 }
                 else {
-                    wss = new WebSocket.Server({ port : port });
+                    const httpServer = http.createServer(requestHandler);
+
+                    httpServer.listen(port);
+                    me.httpServer = httpServer;
+
+                    wss = new WebSocket.Server({ server : httpServer });
                 }
 
                 wss.on('error', error => {
@@ -116,6 +128,28 @@ class WebSocketServer extends MessageHandler {
 
         ws.id = me.generateClientId();
 
+        // Wrap ws.send to log outgoing messages
+        const originalSend = ws.send.bind(ws);
+
+        ws.send = function(msgStr, ...args) {
+            try {
+                const parsed = JSON.parse(msgStr);
+
+                me.messageLogger.log({
+                    direction : 'outgoing',
+                    clientId  : ws.id,
+                    userName  : ws.userName || null,
+                    command   : parsed.command,
+                    data      : parsed.data
+                });
+            }
+            catch {
+                // Ignore parse errors for non-JSON messages
+            }
+
+            return originalSend(msgStr, ...args);
+        };
+
         // ...start listening for messages from it
 
         me.debugLog(`New incoming connection from: ${ws._socket.remoteAddress}`);
@@ -128,6 +162,14 @@ class WebSocketServer extends MessageHandler {
             try {
                 // Messages have format { command : 'cmd', xxx }. Transmitted as a string, parse it to an object
                 const data = JSON.parse(msg);
+
+                me.messageLogger.log({
+                    direction : 'incoming',
+                    clientId  : ws.id,
+                    userName  : ws.userName || null,
+                    command   : data.command,
+                    data      : data.data
+                });
 
                 const handler = this.getHandler(data.command);
 
