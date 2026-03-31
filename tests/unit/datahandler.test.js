@@ -193,3 +193,97 @@ describe('getVersionContent', () => {
         expect(content).toBeUndefined();
     });
 });
+
+describe('segment support', () => {
+    test('Should pass through segment data in task updates', () => {
+        const segments = [
+            { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+            { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+        ];
+
+        const result = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    endDate  : '2024-01-08',
+                    segments
+                }],
+                $input : {
+                    updated : [{ id : 'events-1', segments }]
+                }
+            }
+        });
+
+        const updatedTask = result.changes.tasks.updated[0];
+
+        expect(updatedTask.segments).toEqual(segments);
+        expect(result.changes.tasks.$input.updated[0].segments).toEqual(segments);
+    });
+
+    test('Should preserve segments: null in task updates (merge)', () => {
+        const result = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : null,
+                    duration : 4
+                }],
+                $input : {
+                    updated : [{ id : 'events-1', segments : null, duration : 4 }]
+                }
+            }
+        });
+
+        const updatedTask = result.changes.tasks.updated[0];
+
+        expect('segments' in updatedTask).toBe(true);
+        expect(updatedTask.segments).toBeNull();
+        expect(updatedTask.duration).toBe(4);
+    });
+
+    test('Should preserve null entries in segments array (unchanged segments)', () => {
+        // First set segments on the task
+        handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : [
+                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                    ]
+                }],
+                $input : {}
+            }
+        });
+
+        const
+            project = handler.storage.projects[0],
+            task    = project.data.tasks.getById('events-1'),
+            segments = task.segments.slice();
+
+        // Now send a partial update with null for unchanged segment
+        const result = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : [
+                        null,
+                        { id : 'seg-2', endDate : '2024-01-09' }
+                    ],
+                    endDate : '2024-01-09'
+                }],
+                $input : {}
+            }
+        });
+
+        expect(task.segments[0]).toBe(segments[0]);
+        // segment is re-instantiated
+        expect(task.segments[1]).not.toBe(segments[1]);
+
+        // Broadcast should keep the original format with nulls
+        const updatedTask = result.changes.tasks.updated[0];
+
+        expect(updatedTask.segments[0]).toBeNull();
+        expect(updatedTask.segments[1].id).toBe('seg-2');
+    });
+});

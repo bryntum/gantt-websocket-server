@@ -11,6 +11,29 @@ const defaultConfig = {
 
 let PHANTOMID_ID_MAP = new Map();
 
+/**
+ * Prepares a segments value for store application.
+ * In the revision format, null at a given index means "unchanged segment" —
+ * replace it with the existing segment data at that position.
+ */
+function prepareSegmentsForStore(segments, existingSegments, record) {
+    if (!Array.isArray(segments)) {
+        return segments;
+    }
+
+    return segments.map((seg, i) => {
+        if (seg === null) {
+            // if segment is null, it means local record must have segment existing already
+            if (!existingSegments[i]) {
+                console.error(`Existing segment is not found for task ${record.id}`)
+            }
+            return existingSegments[i];
+        }
+
+        return seg;
+    });
+}
+
 class DataHandler {
     constructor() {
         this.storage = new Storage(defaultConfig);
@@ -150,11 +173,29 @@ class DataHandler {
             }
         }
 
+        // Build store-safe updated records — prepare segments for store application
+        const updatedForStore = [];
+
         changes.updated?.forEach(record => {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {
                 this.replacePhantomId(record, PHANTOMID_ID_MAP);
+
+                // Prepare segments for store: wrap with toJSON, merge nulls with existing
+                if ('segments' in record) {
+                    const storeRecord = Object.assign({}, record);
+
+                    storeRecord.segments = prepareSegmentsForStore(
+                        record.segments,
+                        localRecord.segments,
+                        record
+                    );
+                    updatedForStore.push(storeRecord);
+                }
+                else {
+                    updatedForStore.push(record);
+                }
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
@@ -164,7 +205,11 @@ class DataHandler {
         });
 
         // Apply changeset with full records (including lazy fields like content)
-        store.applyChangeset({ added : addedForStore.length ? addedForStore : changes.added, updated : changes.updated, removed : changes.removed });
+        store.applyChangeset({
+            added   : addedForStore.length ? addedForStore : changes.added,
+            updated : updatedForStore.length ? updatedForStore : changes.updated,
+            removed : changes.removed
+        });
     }
 
     getVersionContent(projectId, versionId) {
