@@ -69,6 +69,7 @@ class DataHandler {
 
             if (PHANTOMID_ID_MAP.has(phantomId)) {
                 segment.id = PHANTOMID_ID_MAP.get(phantomId);
+                segment.$PhantomId = phantomId;
             }
             else if (phantomId && typeof phantomId === 'string' && !phantomId.startsWith('segments-')) {
                 const realId = this.storage.generateId('segments');

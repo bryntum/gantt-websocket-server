@@ -203,15 +203,29 @@ describe('segment support', () => {
                         { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
                     ]
                 }],
-                $input : {}
+                $input : {
+                    updated : [{
+                        id       : 'events-1',
+                        segments : [
+                            { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                            { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                        ]
+                    }]
+                }
             }
         });
 
         const segments = result.changes.tasks.updated[0].segments;
 
         expect(segments).toHaveLength(2);
-        expect(segments[0]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-1' }))
-        expect(segments[1]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-2' }))
+        expect(segments[0]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-1' }));
+        expect(segments[1]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-2' }));
+
+        const inputSegments = result.changes.tasks.$input.updated[0].segments;
+
+        expect(inputSegments).toHaveLength(2);
+        expect(inputSegments[0]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-1' }));
+        expect(inputSegments[1]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-2' }));
     });
 
     test('Should reuse server IDs for same phantom IDs across revisions', () => {
