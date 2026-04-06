@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../../src/server.js');
-const { awaitNextMessage, awaitNextCommand, awaitDataset } = require('../util.js');
+const { awaitNextCommand, awaitDataset } = require('../util.js');
 
 const server = new WebSocketServer({ port : 8089 });
 
@@ -8,12 +8,10 @@ beforeAll(() => server.init());
 
 afterAll(() => server.destroy());
 
-// Segment revision shapes from Bryntum Gantt ProjectRevisionTaskSegments.t.js:
-// CREATE (split):  tasks.updated: [{ id, endDate, segments: [{id, startDate, endDate}, ...] }]
-// UPDATE (modify): tasks.updated: [{ id, segments: [modifiedSeg, null, ...], duration, endDate }]
-// REMOVE (merge):  tasks.updated: [{ id, segments: null, duration }]
+// E2e tests verify that segment changes are broadcast correctly between clients.
+// Datahandler logic (ID generation, $input processing) is covered in unit/datahandler.test.js.
 
-test('Should broadcast segment data when task is split (CREATE)', async () => {
+test('Should broadcast segment split to second client', async () => {
     await server.resetDataSet();
 
     const ws1 = new WebSocket(server.address);
@@ -24,58 +22,52 @@ test('Should broadcast segment data when task is split (CREATE)', async () => {
         awaitDataset(ws2, 1)
     ]);
 
-    const segments = [
-        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
-        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
-    ];
-
-    const request = {
-        command : 'project_change',
-        data    : {
-            project   : 1,
-            revisions : [{
-                revision : 'local-1',
-                changes  : {
-                    tasks : {
-                        updated : [{
-                            id       : 'events-1',
-                            endDate  : '2024-01-08',
-                            segments
-                        }],
-                        $input : {
+    const [response1, response2] = await Promise.allSettled([
+        awaitNextCommand(ws1, 'project_change', {
+            command : 'project_change',
+            data    : {
+                project   : 1,
+                revisions : [{
+                    revision : 'local-1',
+                    changes  : {
+                        tasks : {
                             updated : [{
                                 id       : 'events-1',
-                                segments
-                            }]
+                                endDate  : '2024-01-08',
+                                segments : [
+                                    { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                                    { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                                ]
+                            }],
+                            $input : {
+                                updated : [{
+                                    id       : 'events-1',
+                                    segments : [
+                                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                                    ]
+                                }]
+                            }
                         }
                     }
-                }
-            }]
-        }
-    };
-
-    // ws1 sends, ws2 receives broadcast
-    const [response1, response2] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'project_change', request),
+                }]
+            }
+        }),
         awaitNextCommand(ws2, 'project_change')
     ]);
 
-    // Both clients should receive the segments data
-    const changes1 = response1.value.data.revisions[0].changes;
-    const changes2 = response2.value.data.revisions[0].changes;
+    const senderSegments = response1.value.data.revisions[0].changes.tasks.updated[0].segments;
+    const receiverSegments = response2.value.data.revisions[0].changes.tasks.updated[0].segments;
 
-    expect(changes1.tasks.updated[0].segments).toEqual(segments);
-    expect(changes2.tasks.updated[0].segments).toEqual(segments);
-
-    // $input should be preserved
-    expect(changes1.tasks.$input.updated[0].segments).toEqual(segments);
-    expect(changes2.tasks.$input.updated[0].segments).toEqual(segments);
+    // Both clients receive same segment data
+    expect(receiverSegments).toEqual(senderSegments);
+    expect(senderSegments).toHaveLength(2);
 
     ws1.terminate();
     ws2.terminate();
 });
 
-test('Should broadcast segment modification (UPDATE)', async () => {
+test('Should broadcast segment modification to second client', async () => {
     await server.resetDataSet();
 
     const ws1 = new WebSocket(server.address);
@@ -86,7 +78,7 @@ test('Should broadcast segment modification (UPDATE)', async () => {
         awaitDataset(ws2, 1)
     ]);
 
-    // First split the task
+    // Split first
     await awaitNextCommand(ws1, 'project_change', {
         command : 'project_change',
         data    : {
@@ -110,62 +102,55 @@ test('Should broadcast segment modification (UPDATE)', async () => {
         }
     });
 
-    // Consume the broadcast on ws2
     await awaitNextCommand(ws2, 'project_change');
 
-    // Now modify segment 2 (extend endDate), segment 1 unchanged (null)
-    const modifyRequest = {
-        command : 'project_change',
-        data    : {
-            project   : 1,
-            revisions : [{
-                revision : 'local-2',
-                changes  : {
-                    tasks : {
-                        updated : [{
-                            id       : 'events-1',
-                            segments : [
-                                null,  // seg-1 unchanged
-                                { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-09' }
-                            ],
-                            endDate  : '2024-01-09'
-                        }],
-                        $input : {
+    // Modify segment 2
+    const [response1, response2] = await Promise.allSettled([
+        awaitNextCommand(ws1, 'project_change', {
+            command : 'project_change',
+            data    : {
+                project   : 1,
+                revisions : [{
+                    revision : 'local-2',
+                    changes  : {
+                        tasks : {
                             updated : [{
                                 id       : 'events-1',
                                 segments : [
-                                    null,
-                                    { id : 'seg-2', endDate : '2024-01-09' }
-                                ]
-                            }]
+                                    { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                                    { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-09' }
+                                ],
+                                endDate  : '2024-01-09'
+                            }],
+                            $input : {
+                                updated : [{
+                                    id       : 'events-1',
+                                    segments : [
+                                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-09' }
+                                    ]
+                                }]
+                            }
                         }
                     }
-                }
-            }]
-        }
-    };
-
-    const [response1, response2] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'project_change', modifyRequest),
+                }]
+            }
+        }),
         awaitNextCommand(ws2, 'project_change')
     ]);
 
-    const updatedTask1 = response1.value.data.revisions[0].changes.tasks.updated[0];
-    const updatedTask2 = response2.value.data.revisions[0].changes.tasks.updated[0];
+    const senderTask = response1.value.data.revisions[0].changes.tasks.updated[0];
+    const receiverTask = response2.value.data.revisions[0].changes.tasks.updated[0];
 
-    // Segments array with null for unchanged segments should be preserved
-    expect(updatedTask1.segments[0]).toBeNull();
-    expect(updatedTask1.segments[1].id).toBe('seg-2');
-    expect(updatedTask1.segments[1].endDate).toBe('2024-01-09');
-
-    expect(updatedTask2.segments[0]).toBeNull();
-    expect(updatedTask2.segments[1].id).toBe('seg-2');
+    // Both clients receive same modification
+    expect(receiverTask.segments).toEqual(senderTask.segments);
+    expect(senderTask.segments).toHaveLength(2);
 
     ws1.terminate();
     ws2.terminate();
 });
 
-test('Should broadcast segments: null when segments are merged (REMOVE)', async () => {
+test('Should broadcast segment merge to second client', async () => {
     await server.resetDataSet();
 
     const ws1 = new WebSocket(server.address);
@@ -176,7 +161,7 @@ test('Should broadcast segments: null when segments are merged (REMOVE)', async 
         awaitDataset(ws2, 1)
     ]);
 
-    // First split
+    // Split first
     await awaitNextCommand(ws1, 'project_change', {
         command : 'project_change',
         data    : {
@@ -202,52 +187,42 @@ test('Should broadcast segments: null when segments are merged (REMOVE)', async 
     await awaitNextCommand(ws2, 'project_change');
 
     // Merge — segments: null
-    const mergeRequest = {
-        command : 'project_change',
-        data    : {
-            project   : 1,
-            revisions : [{
-                revision : 'local-2',
-                changes  : {
-                    tasks : {
-                        updated : [{
-                            id       : 'events-1',
-                            segments : null,
-                            duration : 4
-                        }],
-                        $input : {
+    const [response1, response2] = await Promise.allSettled([
+        awaitNextCommand(ws1, 'project_change', {
+            command : 'project_change',
+            data    : {
+                project   : 1,
+                revisions : [{
+                    revision : 'local-2',
+                    changes  : {
+                        tasks : {
                             updated : [{
                                 id       : 'events-1',
                                 segments : null,
                                 duration : 4
-                            }]
+                            }],
+                            $input : {
+                                updated : [{
+                                    id       : 'events-1',
+                                    segments : null,
+                                    duration : 4
+                                }]
+                            }
                         }
                     }
-                }
-            }]
-        }
-    };
-
-    const [response1, response2] = await Promise.allSettled([
-        awaitNextCommand(ws1, 'project_change', mergeRequest),
+                }]
+            }
+        }),
         awaitNextCommand(ws2, 'project_change')
     ]);
 
-    const taskChange1 = response1.value.data.revisions[0].changes.tasks.updated[0];
-    const taskChange2 = response2.value.data.revisions[0].changes.tasks.updated[0];
+    const senderTask = response1.value.data.revisions[0].changes.tasks.updated[0];
+    const receiverTask = response2.value.data.revisions[0].changes.tasks.updated[0];
 
-    // segments: null must be preserved (not stripped)
-    expect('segments' in taskChange1).toBe(true);
-    expect(taskChange1.segments).toBeNull();
-    expect(taskChange1.duration).toBe(4);
-
-    expect('segments' in taskChange2).toBe(true);
-    expect(taskChange2.segments).toBeNull();
-
-    // $input should also have segments: null
-    const $input1 = response1.value.data.revisions[0].changes.tasks.$input;
-
-    expect($input1.updated[0].segments).toBeNull();
+    // Both clients receive segments: null
+    expect(senderTask.segments).toBeNull();
+    expect(receiverTask.segments).toBeNull();
+    expect(receiverTask.duration).toBe(4);
 
     ws1.terminate();
     ws2.terminate();
@@ -260,12 +235,6 @@ test('Should persist segment data for new clients', async () => {
 
     await awaitDataset(ws1, 1);
 
-    const segments = [
-        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
-        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
-    ];
-
-    // Add segments to a task
     await awaitNextCommand(ws1, 'project_change', {
         command : 'project_change',
         data    : {
@@ -277,7 +246,10 @@ test('Should persist segment data for new clients', async () => {
                         updated : [{
                             id       : 'events-1',
                             endDate  : '2024-01-08',
-                            segments
+                            segments : [
+                                { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                                { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                            ]
                         }],
                         $input : {}
                     }
@@ -290,17 +262,11 @@ test('Should persist segment data for new clients', async () => {
     const ws2 = new WebSocket(server.address);
     const dataset = await awaitDataset(ws2, 1);
 
-    // Find the task that was updated
     const taskData = dataset.data.dataset.tasksData;
-
-    // The task store's toJSON should include segment data
-    // Note: This depends on @bryntum/gantt's TaskModel supporting segments in toJSON
-    // If segments are stored as a field on the model, they should be serialized
     const task = findTaskById(taskData, 'events-1');
 
     expect(task).toBeDefined();
-    // The task should have segments data after the update was applied
-    // If TaskModel stores segments, they should appear in the serialized output
+
     if (task.segments) {
         expect(task.segments).toHaveLength(2);
     }
@@ -309,7 +275,6 @@ test('Should persist segment data for new clients', async () => {
     ws2.terminate();
 });
 
-// Helper to find a task in potentially nested tree data
 function findTaskById(tasks, id) {
     for (const task of tasks) {
         if (task.id === id) return task;

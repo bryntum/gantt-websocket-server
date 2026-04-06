@@ -193,32 +193,95 @@ describe('getVersionContent', () => {
 });
 
 describe('segment support', () => {
-    test('Should pass through segment data in task updates', () => {
-        const segments = [
-            { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
-            { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
-        ];
-
+    test('Should generate server IDs for segment phantom IDs', () => {
         const result = handler.handleProjectChanges(1, {
             tasks : {
                 updated : [{
                     id       : 'events-1',
-                    endDate  : '2024-01-08',
-                    segments
+                    segments : [
+                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                    ]
+                }],
+                $input : {}
+            }
+        });
+
+        const segments = result.changes.tasks.updated[0].segments;
+
+        expect(segments).toHaveLength(2);
+        expect(segments[0].id).toMatch(/^segments-/);
+        expect(segments[1].id).toMatch(/^segments-/);
+    });
+
+    test('Should reuse server IDs for same phantom IDs across revisions', () => {
+        const result1 = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : [
+                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                    ]
+                }],
+                $input : {}
+            }
+        });
+
+        const seg1Id = result1.changes.tasks.updated[0].segments[0].id;
+        const seg2Id = result1.changes.tasks.updated[0].segments[1].id;
+
+        // Second revision with same phantom IDs
+        const result2 = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : [
+                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-09' }
+                    ]
+                }],
+                $input : {}
+            }
+        });
+
+        // Same phantom IDs resolve to same server IDs
+        expect(result2.changes.tasks.updated[0].segments[0].id).toBe(seg1Id);
+        expect(result2.changes.tasks.updated[0].segments[1].id).toBe(seg2Id);
+    });
+
+    test('Should replace phantom IDs in $input segments', () => {
+        const result = handler.handleProjectChanges(1, {
+            tasks : {
+                updated : [{
+                    id       : 'events-1',
+                    segments : [
+                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                    ]
                 }],
                 $input : {
-                    updated : [{ id : 'events-1', segments }]
+                    updated : [{
+                        id       : 'events-1',
+                        segments : [
+                            { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
+                            { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                        ]
+                    }]
                 }
             }
         });
 
-        const updatedTask = result.changes.tasks.updated[0];
+        const segments = result.changes.tasks.updated[0].segments;
+        const inputSegments = result.changes.tasks.$input.updated[0].segments;
 
-        expect(updatedTask.segments).toEqual(segments);
-        expect(result.changes.tasks.$input.updated[0].segments).toEqual(segments);
+        // $input segments should have same server IDs as main segments
+        expect(inputSegments[0].id).toBe(segments[0].id);
+        expect(inputSegments[1].id).toBe(segments[1].id);
+        expect(inputSegments[0].id).toMatch(/^segments-/);
     });
 
-    test('Should preserve segments: null in task updates (merge)', () => {
+    test('Should preserve segments: null on merge', () => {
         const result = handler.handleProjectChanges(1, {
             tasks : {
                 updated : [{
@@ -237,48 +300,28 @@ describe('segment support', () => {
         expect('segments' in updatedTask).toBe(true);
         expect(updatedTask.segments).toBeNull();
         expect(updatedTask.duration).toBe(4);
+
+        // $input should also preserve segments: null
+        const inputTask = result.changes.tasks.$input.updated[0];
+
+        expect(inputTask.segments).toBeNull();
+        expect(inputTask.duration).toBe(4);
     });
 
-    test('Should assign server IDs to segment phantom IDs across revisions', () => {
-        // First split — create segments with phantom IDs
-        const result1 = handler.handleProjectChanges(1, {
+    test('Should not touch segments with server IDs', () => {
+        const result = handler.handleProjectChanges(1, {
             tasks : {
                 updated : [{
                     id       : 'events-1',
                     segments : [
-                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
-                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-08' }
+                        { id : 'segments-50', startDate : '2024-01-05', endDate : '2024-01-06' }
                     ]
                 }],
                 $input : {}
             }
         });
 
-        const seg1Id = result1.changes.tasks.updated[0].segments[0].id;
-        const seg2Id = result1.changes.tasks.updated[0].segments[1].id;
-
-        expect(seg1Id).toMatch(/^segments-/);
-        expect(seg2Id).toMatch(/^segments-/);
-
-        // Second revision — modify segment 2, same phantom ID should resolve to same server ID
-        const result2 = handler.handleProjectChanges(1, {
-            tasks : {
-                updated : [{
-                    id       : 'events-1',
-                    segments : [
-                        { id : 'seg-1', startDate : '2024-01-05', endDate : '2024-01-06' },
-                        { id : 'seg-2', startDate : '2024-01-07', endDate : '2024-01-09' }
-                    ],
-                    endDate : '2024-01-09'
-                }],
-                $input : {}
-            }
-        });
-
-        const updatedTask = result2.changes.tasks.updated[0];
-
-        // Same phantom IDs should resolve to same server IDs
-        expect(updatedTask.segments[0].id).toBe(seg1Id);
-        expect(updatedTask.segments[1].id).toBe(seg2Id);
+        // Already has server prefix — should not be remapped
+        expect(result.changes.tasks.updated[0].segments[0].id).toBe('segments-50');
     });
 });
