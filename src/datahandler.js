@@ -74,6 +74,7 @@ class DataHandler {
                 const realId = this.storage.generateId('segments');
                 PHANTOMID_ID_MAP.set(phantomId, realId);
                 segment.id = realId;
+                segment.$PhantomId = phantomId;
             }
         }
     }

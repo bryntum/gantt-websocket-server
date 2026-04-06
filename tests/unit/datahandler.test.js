@@ -210,8 +210,8 @@ describe('segment support', () => {
         const segments = result.changes.tasks.updated[0].segments;
 
         expect(segments).toHaveLength(2);
-        expect(segments[0].id).toMatch(/^segments-/);
-        expect(segments[1].id).toMatch(/^segments-/);
+        expect(segments[0]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-1' }))
+        expect(segments[1]).toEqual(expect.objectContaining({ id : expect.stringMatching(/segments-/), $PhantomId : 'seg-2' }))
     });
 
     test('Should reuse server IDs for same phantom IDs across revisions', () => {
