@@ -53,9 +53,7 @@ describe('handleProjectChanges', () => {
         expect(addedTask.id).toEqual(expect.any(String));
         expect(addedTask.$PhantomId).toBe('phantom-1');
         expect(result.hasNewRecords).toBe(true);
-    });
 
-    test('Should map phantom IDs to generated IDs', () => {
         handler.handleProjectChanges(1, {
             tasks : {
                 added : [{ $PhantomId : 'phantom-1' }]
@@ -241,9 +239,9 @@ describe('segment support', () => {
         expect(updatedTask.duration).toBe(4);
     });
 
-    test('Should preserve null entries in segments array (unchanged segments)', () => {
-        // First set segments on the task
-        handler.handleProjectChanges(1, {
+    test('Should assign server IDs to segment phantom IDs across revisions', () => {
+        // First split — create segments with phantom IDs
+        const result1 = handler.handleProjectChanges(1, {
             tasks : {
                 updated : [{
                     id       : 'events-1',
@@ -256,13 +254,14 @@ describe('segment support', () => {
             }
         });
 
-        const
-            project = handler.storage.projects[0],
-            task    = project.data.tasks.getById('events-1'),
-            segments = task.segments.slice();
+        const seg1Id = result1.changes.tasks.updated[0].segments[0].id;
+        const seg2Id = result1.changes.tasks.updated[0].segments[1].id;
 
-        // Now send a partial update with null for unchanged segment
-        const result = handler.handleProjectChanges(1, {
+        expect(seg1Id).toMatch(/^segments-/);
+        expect(seg2Id).toMatch(/^segments-/);
+
+        // Second revision — modify segment 2, same phantom ID should resolve to same server ID
+        const result2 = handler.handleProjectChanges(1, {
             tasks : {
                 updated : [{
                     id       : 'events-1',
@@ -276,12 +275,10 @@ describe('segment support', () => {
             }
         });
 
-        expect(task.segments[0]).not.toBe(segments[0]);
-        expect(task.segments[1]).not.toBe(segments[1]);
+        const updatedTask = result2.changes.tasks.updated[0];
 
-        // Broadcast should keep the original format with nulls
-        const updatedTask = result.changes.tasks.updated[0];
-
-        expect(updatedTask.segments[1].id).toMatch(/segments/);
+        // Same phantom IDs should resolve to same server IDs
+        expect(updatedTask.segments[0].id).toBe(seg1Id);
+        expect(updatedTask.segments[1].id).toBe(seg2Id);
     });
 });

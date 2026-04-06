@@ -10,7 +10,6 @@ const defaultConfig = {
 };
 
 let PHANTOMID_ID_MAP = new Map();
-let SEGMENT_ID_MAP = new Map();
 
 class DataHandler {
     constructor() {
@@ -58,6 +57,23 @@ class DataHandler {
             }
             else if (typeof value === 'object' && !Array.isArray(value)) {
                 this.replacePhantomId(value);
+            }
+        }
+    }
+
+    processSegments(record) {
+        if (!Array.isArray(record.segments)) return;
+
+        for (const segment of record.segments) {
+            const phantomId = segment.id;
+
+            if (PHANTOMID_ID_MAP.has(phantomId)) {
+                segment.id = PHANTOMID_ID_MAP.get(phantomId);
+            }
+            else if (phantomId && typeof phantomId === 'string' && !phantomId.startsWith('segments-')) {
+                const realId = this.storage.generateId('segments');
+                PHANTOMID_ID_MAP.set(phantomId, realId);
+                segment.id = realId;
             }
         }
     }
@@ -160,23 +176,17 @@ class DataHandler {
             if (localRecord) {
                 this.replacePhantomId(record);
 
-                // Prepare segments for store: wrap with toJSON, merge nulls with existing
+                // Process segments: replace phantom IDs with server-generated ones
                 if ('segments' in record) {
                     const storeRecord = Object.assign({}, record);
 
-                    // segments could be `null`
-                    record.segments?.forEach(segment => {
-                        const phantomId = segment.id;
+                    this.processSegments(record);
 
-                        if (PHANTOMID_ID_MAP.has(phantomId)) {
-                            segment.id = PHANTOMID_ID_MAP.get(phantomId);
-                        }
-                        else if (!SEGMENT_ID_MAP.has(phantomId)) {
-                            segment.id = this.storage.generateId('segments');
-                            PHANTOMID_ID_MAP.set(phantomId, segment.id);
-                            SEGMENT_ID_MAP.set(segment.id, segment);
-                        }
-                    });
+                    // Also process $input segments for the same record
+                    const inputRecord = changes.$input?.updated?.find(r => r.id === record.id);
+                    if (inputRecord && 'segments' in inputRecord) {
+                        this.processSegments(inputRecord);
+                    }
 
                     updatedForStore.push(storeRecord);
                 }
@@ -187,7 +197,7 @@ class DataHandler {
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
                 // It should not be happening
-                console.warn('Record not found in store ' + store.id);
+                console.warn(`Record ${record.id} not found in store ${store.id}`);
             }
         });
 
