@@ -11,29 +11,6 @@ const defaultConfig = {
 
 let PHANTOMID_ID_MAP = new Map();
 
-/**
- * Prepares a segments value for store application.
- * In the revision format, null at a given index means "unchanged segment" —
- * replace it with the existing segment data at that position.
- */
-function prepareSegmentsForStore(segments, existingSegments, record) {
-    if (!Array.isArray(segments)) {
-        return segments;
-    }
-
-    return segments.map((seg, i) => {
-        if (seg === null) {
-            // if segment is null, it means local record must have segment existing already
-            if (!existingSegments[i]) {
-                console.error(`Existing segment is not found for task ${record.id}`)
-            }
-            return existingSegments[i];
-        }
-
-        return seg;
-    });
-}
-
 class DataHandler {
     constructor() {
         this.storage = new Storage(defaultConfig);
@@ -180,17 +157,25 @@ class DataHandler {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {
-                this.replacePhantomId(record, PHANTOMID_ID_MAP);
+                this.replacePhantomId(record);
 
                 // Prepare segments for store: wrap with toJSON, merge nulls with existing
                 if ('segments' in record) {
                     const storeRecord = Object.assign({}, record);
 
-                    storeRecord.segments = prepareSegmentsForStore(
-                        record.segments,
-                        localRecord.segments,
-                        record
-                    );
+                    // segments could be `null`
+                    record.segments?.forEach(segment => {
+                        const phantomId = segment.id;
+
+                        if (PHANTOMID_ID_MAP.has(phantomId)) {
+                            segment.id = PHANTOMID_ID_MAP.get(phantomId);
+                        }
+                        else {
+                            segment.id = this.storage.generateId(store.id);
+                            PHANTOMID_ID_MAP.set(segment.$PhantomId, segment.id);
+                        }
+                    });
+
                     updatedForStore.push(storeRecord);
                 }
                 else {

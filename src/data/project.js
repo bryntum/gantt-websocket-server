@@ -27,7 +27,7 @@ class SegmentModel extends Model {
     ];
 }
 
-class SegmentedTaskModel extends TaskModel {
+class SegmentedTaskModel extends Model {
     static fields = [
         {
             name    : 'segments',
