@@ -10,6 +10,7 @@ const defaultConfig = {
 };
 
 let PHANTOMID_ID_MAP = new Map();
+let SEGMENT_ID_MAP = new Map();
 
 class DataHandler {
     constructor() {
@@ -170,9 +171,10 @@ class DataHandler {
                         if (PHANTOMID_ID_MAP.has(phantomId)) {
                             segment.id = PHANTOMID_ID_MAP.get(phantomId);
                         }
-                        else {
-                            segment.id = this.storage.generateId(store.id);
-                            PHANTOMID_ID_MAP.set(segment.$PhantomId, segment.id);
+                        else if (!SEGMENT_ID_MAP.has(phantomId)) {
+                            segment.id = this.storage.generateId('segments');
+                            PHANTOMID_ID_MAP.set(phantomId, segment.id);
+                            SEGMENT_ID_MAP.set(segment.id, segment);
                         }
                     });
 
