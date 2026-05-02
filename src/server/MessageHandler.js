@@ -223,7 +223,8 @@ class MessageHandler extends AuthorizationHandler {
                 revision      : this.getNextRevision(project),
                 localRevision : revision.revision,
                 client        : ws.id,
-                changes       : this.dataHandler.handleProjectChanges(project, revision.changes).changes
+                changes       : this.dataHandler.handleProjectChanges(project, revision.changes).changes,
+                revisionType  : revision.revisionType,
             };
 
             if (revision.conflictResolutionFor) {
