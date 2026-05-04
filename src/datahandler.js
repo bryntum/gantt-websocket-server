@@ -30,6 +30,10 @@ class DataHandler {
         return this.storage.getProjectsMetadata(ids);
     }
 
+    get phantomIdMap() {
+        return PHANTOMID_ID_MAP;
+    }
+
     reset(id) {
         if (id != null) {
             this.storage.reset(id);
@@ -53,6 +57,25 @@ class DataHandler {
             }
             else if (typeof value === 'object' && !Array.isArray(value)) {
                 this.replacePhantomId(value);
+            }
+        }
+    }
+
+    processSegments(record) {
+        if (!Array.isArray(record.segments)) return;
+
+        for (const segment of record.segments) {
+            const phantomId = segment.id;
+
+            if (PHANTOMID_ID_MAP.has(phantomId)) {
+                segment.id = PHANTOMID_ID_MAP.get(phantomId);
+                segment.$PhantomId = phantomId;
+            }
+            else if (phantomId && typeof phantomId === 'string' && !phantomId.startsWith('segments-')) {
+                const realId = this.storage.generateId('segments');
+                PHANTOMID_ID_MAP.set(phantomId, realId);
+                segment.id = realId;
+                segment.$PhantomId = phantomId;
             }
         }
     }
@@ -82,6 +105,9 @@ class DataHandler {
 
     // Bryntum Store has enough API to apply changeset, but we should generate IDs first. After that we can pass
     handleStoreChanges(store, changes) {
+        // Keep full records for store application, strip lazy fields only for rebroadcast
+        const addedForStore = [];
+
         if (changes.added) {
             for (let i = 0; i < changes.added.length; i++) {
                 const record = changes.added[i];
@@ -116,7 +142,7 @@ class DataHandler {
                     i--;
                 }
                 else {
-                    record.id = this.storage.generateId(store.storeId);
+                    record.id = this.storage.generateId(store.id);
                     PHANTOMID_ID_MAP.set(record.$PhantomId, record.id);
 
                     const inputRecord = changes.$input?.added?.find(r => r.$PhantomId === phantomId);
@@ -137,25 +163,52 @@ class DataHandler {
                 // Replace phantom ids with real ones
                 this.replacePhantomId(record);
 
-                // Replace with version with lazy-loaded fields omitted for rebroadcast
+                // Keep full record for store, omit lazy fields for rebroadcast
+                addedForStore.push(record);
                 changes.added[i] = omitLazyFields(record);
             }
         }
+
+        // Build store-safe updated records — prepare segments for store application
+        const updatedForStore = [];
 
         changes.updated?.forEach(record => {
             const localRecord = store.getById(record.id);
 
             if (localRecord) {
-                this.replacePhantomId(record, PHANTOMID_ID_MAP);
+                this.replacePhantomId(record);
+
+                // Process segments: replace phantom IDs with server-generated ones
+                if ('segments' in record) {
+                    const storeRecord = Object.assign({}, record);
+
+                    this.processSegments(record);
+
+                    // Also process $input segments for the same record
+                    const inputRecord = changes.$input?.updated?.find(r => r.id === record.id);
+                    if (inputRecord && 'segments' in inputRecord) {
+                        this.processSegments(inputRecord);
+                    }
+
+                    updatedForStore.push(storeRecord);
+                }
+                else {
+                    updatedForStore.push(record);
+                }
             }
             else {
                 // If we got here, it means there is an updated record on the client which doesn't exist on the server.
                 // It should not be happening
-                console.warn('Record not found in store ' + store.storeId);
+                console.warn(`Record ${record.id} not found in store ${store.id}`);
             }
         });
 
-        store.applyChangeset({ added : changes.added, updated : changes.updated, removed : changes.removed });
+        // Apply changeset with full records (including lazy fields like content)
+        store.applyChangeset({
+            added   : addedForStore.length ? addedForStore : changes.added,
+            updated : updatedForStore.length ? updatedForStore : changes.updated,
+            removed : changes.removed
+        });
     }
 
     getVersionContent(projectId, versionId) {

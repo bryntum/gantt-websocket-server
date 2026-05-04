@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs for the same ref when a new commit lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      # The @bryntum scope lives on a private registry; auth comes from the
+      # NPMTOKEN repo secret which contains a full .npmrc payload.
+      - name: Configure npm auth
+        run: printf '%s\n' "$NPMRC" > ~/.npmrc
+        env:
+          NPMRC: ${{ secrets.NPMTOKEN }}
+
+      # package-lock.json is gitignored in this repo, so `npm ci` is unavailable.
+      - run: npm install --no-audit --no-fund
+
+      - run: npx --no-install eslint .
+
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Configure npm auth
+        run: printf '%s\n' "$NPMRC" > ~/.npmrc
+        env:
+          NPMRC: ${{ secrets.NPMTOKEN }}
+
+      - run: npm install --no-audit --no-fund
+
+      - run: npm test

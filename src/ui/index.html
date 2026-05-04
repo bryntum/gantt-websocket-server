@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt WebSocket Server - Inspector</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Gantt WebSocket Server Inspector</h1>
+        <div class="header-controls">
+            <div id="server-status" class="status-badge">
+                <span class="status-indicator"></span>
+                <span class="status-text">Loading...</span>
+            </div>
+            <button id="refresh-current" class="btn btn-primary">Refresh</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Side Navigation -->
+        <nav class="sidebar">
+            <div class="nav-item active" data-view="messages">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">Messages</span>
+                <span class="nav-badge" id="nav-messages-count">0</span>
+            </div>
+            <div class="nav-item" data-view="sessions">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Sessions</span>
+                <span class="nav-badge" id="nav-sessions-count">0</span>
+            </div>
+            <div class="nav-item" data-view="projects">
+                <span class="nav-icon">📁</span>
+                <span class="nav-label">Projects</span>
+                <span class="nav-badge" id="nav-projects-count">0</span>
+            </div>
+            <div class="nav-item" data-view="phantom-ids">
+                <span class="nav-icon">🔑</span>
+                <span class="nav-label">Phantom IDs</span>
+                <span class="nav-badge" id="nav-phantom-ids-count">0</span>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Messages View -->
+            <section class="view active" id="messages-view">
+                <div class="view-header">
+                    <h2>Recent Messages</h2>
+                    <div class="view-info">Last 10 messages (buffer stores up to 100)</div>
+                </div>
+                <div class="view-content">
+                    <div id="messages-content" class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Sessions View -->
+            <section class="view" id="sessions-view">
+                <div class="view-header">
+                    <h2>Active Sessions</h2>
+                    <div class="view-info">Connected WebSocket clients</div>
+                </div>
+                <div class="view-content">
+                    <div id="sessions-content" class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Projects View -->
+            <section class="view" id="projects-view">
+                <div class="view-header">
+                    <h2>Projects</h2>
+                    <div class="view-info">Click a project to view detailed data</div>
+                </div>
+                <div class="view-content">
+                    <div id="projects-content" class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Phantom IDs View -->
+            <section class="view" id="phantom-ids-view">
+                <div class="view-header">
+                    <h2>Phantom ID Mappings</h2>
+                    <div class="view-info">Phantom ID to Real ID mappings</div>
+                </div>
+                <div class="view-content">
+                    <label for="phantom-search"></label>
+                    <input type="text" id="phantom-search" class="search-input" placeholder="Search phantom IDs...">
+                    <div id="phantom-ids-content" class="loading">Loading...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Project Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="project-details-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSON Viewer Modal -->
+    <div id="json-modal" class="modal">
+        <div class="modal-content modal-fullscreen">
+            <div class="modal-header">
+                <h3 id="json-modal-title">JSON Viewer</h3>
+                <div class="json-modal-controls">
+                    <button id="json-expand-all" class="btn btn-sm">Expand All</button>
+                    <button id="json-collapse-all" class="btn btn-sm">Collapse All</button>
+                    <button id="json-copy-all" class="btn btn-sm">Copy JSON</button>
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body json-modal-body">
+                <div id="json-modal-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
