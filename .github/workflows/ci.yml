@@ -26,6 +26,12 @@ jobs:
         with:
           node-version: 20.x
 
+      # See test job for context: paid package aliased to the trial package.
+      - name: Use @bryntum/gantt-trial in CI
+        run: |
+          VERSION=$(node -p "require('./package.json').dependencies['@bryntum/gantt']")
+          npm pkg set "dependencies.@bryntum/gantt=npm:@bryntum/gantt-trial@$VERSION"
+
       # package-lock.json is gitignored in this repo, so `npm ci` is unavailable.
       - run: npm install --no-audit --no-fund
 
@@ -45,6 +51,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
+      # The real @bryntum/gantt package is paid and not on the public registry.
+      # Alias it to @bryntum/gantt-trial of the same version so every
+      # `require('@bryntum/gantt/...')` resolves transparently in CI.
+      - name: Use @bryntum/gantt-trial in CI
+        run: |
+          VERSION=$(node -p "require('./package.json').dependencies['@bryntum/gantt']")
+          npm pkg set "dependencies.@bryntum/gantt=npm:@bryntum/gantt-trial@$VERSION"
 
       - run: npm install --no-audit --no-fund
 
