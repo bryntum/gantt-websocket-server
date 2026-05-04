@@ -12,13 +12,13 @@
   "author": "Bryntum",
   "license": "ISC",
   "dependencies": {
-    "@bryntum/gantt": "5.6.11",
+    "@bryntum/gantt": "7.2.4",
     "network-interfaces": "~1.1.0",
-    "ws": "~6.1.4"
+    "ws": "^6.2.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "eslint": "^8.19.0",
-    "jest": "~27.5.1"
+    "eslint": "^10.3.0",
+    "jest": "^30.3.0"
   }
 }
