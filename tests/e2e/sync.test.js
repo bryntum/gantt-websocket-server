@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../../src/server.js');
-const { awaitNextMessage, awaitNextCommand, awaitAuth, awaitDataset } = require('../util.js');
+const { awaitNextMessage, awaitNextCommand, awaitDataset } = require('../util.js');
 const { TaskStore } = require('@bryntum/gantt/gantt.node.cjs');
 
 const server = new WebSocketServer({ port : 8085 });

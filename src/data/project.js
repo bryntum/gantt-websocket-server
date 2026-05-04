@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Store, TaskModel, Model } = require('@bryntum/gantt/gantt.node.cjs');
+const { Store, Model } = require('@bryntum/gantt/gantt.node.cjs');
 
 const lazyFields = ['content'];
 

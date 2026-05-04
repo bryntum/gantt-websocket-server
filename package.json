@@ -7,7 +7,8 @@
     "start": "node index.js port=8080",
     "test": "jest tests",
     "test:unit": "jest tests/unit tests/data",
-    "test:e2e": "jest tests/e2e"
+    "test:e2e": "jest tests/e2e",
+    "lint": "eslint"
   },
   "author": "Bryntum",
   "license": "ISC",
@@ -17,8 +18,11 @@
     "ws": "^6.2.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
     "@types/jest": "^29.5.12",
     "eslint": "^10.3.0",
+    "globals": "^17.6.0",
     "jest": "^30.3.0"
   }
 }

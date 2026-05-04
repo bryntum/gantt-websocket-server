@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const { WebSocketServer } = require('../../src/server.js');
-const { awaitNextMessage, awaitNextCommand, awaitAuth, awaitDataset } = require('../util.js');
+const { awaitNextMessage, awaitNextCommand, awaitAuth } = require('../util.js');
 
 const server = new WebSocketServer({ port : 8083 });
 
@@ -79,7 +79,7 @@ test('Should broadcast logout on logout command', async () => {
     await awaitAuth(ws);
     await awaitAuth(ws1, 'alex', 'alex');
 
-    const [response, logoutBroadcast] = await Promise.all([
+    const [response] = await Promise.all([
         awaitNextCommand(ws1, 'logout', { command : 'logout' }),
         awaitNextCommand(ws, 'logout')
     ]);
@@ -107,7 +107,9 @@ test('Login procedure should have specific amount of messages', async () => {
     const ws = new WebSocket(server.address);
     const messages = [];
     let resolver;
-    const done = new Promise(resolve => { resolver = resolve; });
+    const done = new Promise(resolve => {
+ resolver = resolve; 
+});
 
     ws.on('open', () => {
         ws.on('message', data => {
