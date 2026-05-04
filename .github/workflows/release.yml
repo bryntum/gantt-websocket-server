@@ -54,6 +54,12 @@ jobs:
         with:
           node-version: 20.x
 
+      # @bryntum scope auth — see ci.yml for context.
+      - name: Configure npm auth
+        run: printf '%s\n' "$NPMRC" > ~/.npmrc
+        env:
+          NPMRC: ${{ secrets.NPMTOKEN }}
+
       - run: npm install --no-audit --no-fund
 
       - run: npm test
