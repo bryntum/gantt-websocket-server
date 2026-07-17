@@ -203,6 +203,17 @@ class DataHandler {
             }
         });
 
+        // https://github.com/bryntum/support/issues/11480
+        // `$input.updated` can carry existing records re-parented under a restored (phantom) parent - e.g. when
+        // one client undoes a removal that restores a subtree while another client had undone an indent of the
+        // same tasks. Those records reference the parent by its phantom id, so we must remap them here (the same
+        // way we already remap top-level `updated` and `$input.added`); otherwise remote clients receive an
+        // unresolved phantom parentId and the re-parenting is dropped, leaving clients out of sync.
+        changes.$input?.updated?.forEach(record => {
+            this.replacePhantomId(record);
+            this.processSegments(record);
+        });
+
         // Apply changeset with full records (including lazy fields like content)
         store.applyChangeset({
             added   : addedForStore.length ? addedForStore : changes.added,
