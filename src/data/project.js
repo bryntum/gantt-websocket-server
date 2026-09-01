@@ -29,6 +29,7 @@ class SegmentModel extends Model {
 
 class SegmentedTaskModel extends Model {
     static fields = [
+        { name : 'expanded', persist : true },
         {
             name    : 'segments',
             type    : 'array',
