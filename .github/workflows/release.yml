@@ -42,7 +42,7 @@ jobs:
           echo "::error::Release must be run from the default branch (${{ github.event.repository.default_branch }}), got ${{ github.ref }}"
           exit 1
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # Use the default GITHUB_TOKEN for the push; protected-branch rules
@@ -50,7 +50,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 20.x
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ !inputs.dry-run }}
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.bump.outputs.version }}
           name: ${{ steps.bump.outputs.version }}
